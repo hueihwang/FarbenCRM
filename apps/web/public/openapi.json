@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenClaw CRM API",
+    "title": "FarbenCRM API",
     "version": "1.0.0",
-    "description": "REST API for OpenClaw CRM — a self-hosted CRM. All endpoints require authentication via Bearer token or session cookie. Responses use envelope format: { data: ... } on success, { error: { code, message } } on error."
+    "description": "REST API for FarbenCRM — a self-hosted CRM. All endpoints require authentication via Bearer token or session cookie. Responses use envelope format: { data: ... } on success, { error: { code, message } } on error."
   },
   "servers": [
     {
@@ -19,7 +19,7 @@
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "API key token. Create via Settings > API Keys. Format: oc_sk_<48 hex chars>"
+        "description": "API key token. Create via Settings > API Keys. Format: fc_sk_<48 hex chars>"
       }
     },
     "schemas": {

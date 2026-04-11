@@ -15,7 +15,7 @@ import {
   type DragMoveEvent,
   type CollisionDetection,
 } from "@dnd-kit/core";
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 import { cn } from "@/lib/utils";
 import { GripVertical } from "lucide-react";
 import { extractPersonalName } from "@/lib/display-name";

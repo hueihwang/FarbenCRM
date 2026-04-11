@@ -5,8 +5,8 @@ import { workspaces } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 interface WorkspaceSettings {
-  openrouterApiKey?: string;
-  openrouterModel?: string;
+  anthropicApiKey?: string;
+  anthropicModel?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -25,28 +25,28 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     const settings = (workspace?.settings ?? {}) as WorkspaceSettings;
-    apiKey = settings.openrouterApiKey;
-    if (!model) model = settings.openrouterModel;
+    apiKey = settings.anthropicApiKey;
+    if (!model) model = settings.anthropicModel;
   }
 
   if (!apiKey) {
     return badRequest("No API key configured");
   }
 
-  if (!model) model = "anthropic/claude-sonnet-4";
+  if (!model) model = "claude-sonnet-4-20250514";
 
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": process.env.BETTER_AUTH_URL || "http://localhost:3001",
+        "x-api-key": apiKey,
+        "content-type": "application/json",
+        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
         model,
-        messages: [{ role: "user", content: "Say hello in one word." }],
         max_tokens: 10,
+        messages: [{ role: "user", content: "Say hello in one word." }],
       }),
     });
 

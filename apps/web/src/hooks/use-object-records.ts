@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { FilterGroup, SortConfig } from "@openclaw-crm/shared";
+import type { FilterGroup, SortConfig } from "@farbencrm/shared";
 
 interface AttributeDef {
   id: string;

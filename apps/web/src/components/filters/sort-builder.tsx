@@ -1,7 +1,7 @@
 "use client";
 
-import type { SortConfig } from "@openclaw-crm/shared";
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { SortConfig } from "@farbencrm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, X, ArrowUp, ArrowDown } from "lucide-react";
 

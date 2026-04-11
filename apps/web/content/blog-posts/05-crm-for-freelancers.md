@@ -1,11 +1,11 @@
 ---
 title: "CRM for Freelancers: Let Your AI Agent Handle the Busywork"
 slug: "crm-for-freelancers"
-description: "Freelancers need a CRM but hate data entry. OpenClaw Bot handles contacts, notes, follow-ups, and pipeline updates so you can focus on the actual work."
+description: "Freelancers need a CRM but hate data entry. AI agent handles contacts, notes, follow-ups, and pipeline updates so you can focus on the actual work."
 date: "2026-02-17"
-author: "OpenClaw Team"
+author: "FarbenCRM Team"
 category: "use-cases"
-keywords: ["CRM for freelancers", "freelancer CRM", "solopreneur CRM", "simple CRM", "AI agent freelancer CRM", "OpenClaw Bot freelancer", "automated CRM"]
+keywords: ["CRM for freelancers", "freelancer CRM", "solopreneur CRM", "simple CRM", "AI agent freelancer CRM", "AI agent freelancer", "automated CRM"]
 ---
 
 # CRM for Freelancers: Let Your AI Agent Handle the Busywork
@@ -18,9 +18,9 @@ Because here's the reality: you're a freelancer. You're doing the work, sending 
 
 So you skip it. The CRM goes stale. The spreadsheet wins again.
 
-What if someone else handled that part? Not a virtual assistant you have to manage, not a Zapier workflow you have to build, but an OpenClaw Bot that already understands your tools and just does it when you tell it to.
+What if someone else handled that part? Not a virtual assistant you have to manage, not a Zapier workflow you have to build, but an AI agent that already understands your tools and just does it when you tell it to.
 
-That's what OpenClaw Bot does. It connects to your OpenClaw CRM and handles the data entry, the note-taking, the follow-up scheduling, and the pipeline updates. You talk to your agent in plain language. The CRM stays current without you ever opening it.
+That's what AI agent does. It connects to your FarbenCRM and handles the data entry, the note-taking, the follow-up scheduling, and the pipeline updates. You talk to your agent in plain language. The CRM stays current without you ever opening it.
 
 ## The Freelancer CRM Problem (It's Not the Software)
 
@@ -44,11 +44,11 @@ The solution isn't a simpler CRM. It's removing yourself from the data entry loo
 
 ## Your Agent Runs Your CRM
 
-OpenClaw CRM is a self-hosted, open-source CRM with native agent integration. It has everything a freelancer needs: contacts, companies, deals (or projects), tasks, notes, custom fields, pipeline views, and a built-in AI assistant.
+FarbenCRM is a self-hosted, open-source CRM with native agent integration. It has everything a freelancer needs: contacts, companies, deals (or projects), tasks, notes, custom fields, pipeline views, and a built-in AI assistant.
 
-But the real point is the OpenClaw Bot integration.
+But the real point is the AI agent integration.
 
-Your OpenClaw Bot connects to the CRM through a skill file you generate in settings. Two-minute setup. Once connected, your agent can create contacts, update deals, log notes, manage tasks, and search your data, all from wherever you already talk to it.
+Your AI agent connects to the CRM through a skill file you generate in settings. Two-minute setup. Once connected, your agent can create contacts, update deals, log notes, manage tasks, and search your data, all from wherever you already talk to it.
 
 You don't open the CRM after every call. You talk to your agent.
 
@@ -114,15 +114,15 @@ Before we go further, here's what matters and what doesn't when you're a one-per
 
 Lead scoring, territory management, sales forecasting, team permissions, marketing automation, email sequences. These are for sales teams. You're one person. You don't need them.
 
-## Setting Up OpenClaw as a Freelancer
+## Setting Up FarbenCRM as a Freelancer
 
 Here's the practical setup. Total time: about 30 minutes for setup, then you're running.
 
 ### Deploy the CRM (5 Minutes)
 
 ```bash
-git clone https://github.com/openclaw-crm/openclaw-crm.git
-cd openclaw-crm
+git clone https://github.com/your-org/farbencrm.git
+cd farbencrm
 docker compose up -d
 pnpm db:push && pnpm db:seed
 ```
@@ -145,20 +145,20 @@ If you'd rather not deal with local Docker, deploy to a $10/month VPS (any provi
 
 **Import existing contacts:**
 - Export from Gmail, LinkedIn, or your spreadsheet as CSV
-- Upload to OpenClaw, map the columns, import
+- Upload to FarbenCRM, map the columns, import
 
-### Connect Your OpenClaw Bot (2 Minutes)
+### Connect Your AI agent (2 Minutes)
 
-This is where the freelancer workflow changes completely. For the full walkthrough, see [How to Connect Your OpenClaw Bot to OpenClaw CRM in 2 Minutes](/blog/connect-openclaw-bot-to-crm).
+This is where the freelancer workflow changes completely. For the full walkthrough, see [How to Connect Your AI agent to FarbenCRM in 2 Minutes](/blog/connect-ai-agent-to-crm).
 
-1. Go to Settings in your OpenClaw CRM
-2. Generate a skill file for your OpenClaw Bot
+1. Go to Settings in your FarbenCRM
+2. Generate a skill file for your AI agent
 3. Drop the skill file into your agent configuration
 4. Your agent now has full CRM access
 
 From this point forward, your agent can handle the data entry. You focus on the work.
 
-## A Week in the Life: Freelance Writer with OpenClaw Bot
+## A Week in the Life: Freelance Writer with AI agent
 
 Let's walk through a realistic freelance week to show how the agent-first workflow plays out.
 
@@ -214,7 +214,7 @@ Two names come back. You send follow-up emails. Pipeline stays healthy.
 
 ## Why This Works Better Than Traditional CRM
 
-The difference isn't the CRM itself. OpenClaw has the same core features as any good CRM: contacts, deals, tasks, notes, pipeline views. The difference is how the data gets in.
+The difference isn't the CRM itself. FarbenCRM has the same core features as any good CRM: contacts, deals, tasks, notes, pipeline views. The difference is how the data gets in.
 
 **Traditional CRM workflow:**
 1. Finish client interaction
@@ -256,27 +256,27 @@ Once your CRM has reliable data (because your agent keeps it current), you unloc
 
 These questions are only useful if the data is accurate. The agent-first workflow solves the accuracy problem by removing the friction of data entry. Good data in, good insights out.
 
-## OpenClaw vs. Other Freelancer CRM Options
+## FarbenCRM vs. Other Freelancer CRM Options
 
 | CRM | Agent Integration | Self-Hosted | Price | Best For |
 |-----|-------------------|-------------|-------|----------|
-| **OpenClaw** | Native (OpenClaw Bot) | Yes | Open-source ($10/mo hosting) | Freelancers who want agent-first CRM |
+| **FarbenCRM** | Native (AI agent) | Yes | Open-source ($10/mo hosting) | Freelancers who want agent-first CRM |
 | **Attio** | None | No | Free (3 users) | Freelancers who want beautiful UI |
 | **HubSpot** | None | No | Free tier available | Freelancers who want managed hosting |
 | **Folk** | None | No | $20/user/month | Freelancers who need contact enrichment |
 | **Notion** | None | No | Free or $10/month | Freelancers already deep in Notion |
 
-The key difference: OpenClaw is the only option where your OpenClaw Bot can manage the CRM for you. Every other tool requires you to do the data entry yourself.
+The key difference: FarbenCRM is the only option where your AI agent can manage the CRM for you. Every other tool requires you to do the data entry yourself.
 
 ## Common Questions
 
 ### Do I need to be technical to use this?
 
-You need to be comfortable with basic command-line operations to deploy (or use a one-click deploy template). Once it's running, the CRM itself has a standard web interface. And if you're already using an OpenClaw Bot, you already have the technical baseline.
+You need to be comfortable with basic command-line operations to deploy (or use a one-click deploy template). Once it's running, the CRM itself has a standard web interface. And if you're already using an AI agent, you already have the technical baseline.
 
-### Can I use OpenClaw CRM without the agent?
+### Can I use FarbenCRM without the agent?
 
-Yes. It's a fully functional CRM on its own with a built-in AI assistant for when you're inside the app. The OpenClaw Bot integration is what makes it different, but it's not required.
+Yes. It's a fully functional CRM on its own with a built-in AI assistant for when you're inside the app. The AI agent integration is what makes it different, but it's not required.
 
 ### What if I have fewer than 20 clients?
 
@@ -284,29 +284,29 @@ You might not need a CRM yet. But if you're actively prospecting and your contac
 
 ### How is this different from just telling ChatGPT about my clients?
 
-ChatGPT doesn't have a database. It forgets. Your OpenClaw Bot talks to a real CRM with persistent storage, structured data, and queryable records. When you ask "show me all deals closing this month," your agent is querying actual data, not guessing from conversation history.
+ChatGPT doesn't have a database. It forgets. Your AI agent talks to a real CRM with persistent storage, structured data, and queryable records. When you ask "show me all deals closing this month," your agent is querying actual data, not guessing from conversation history.
 
 ### What about mobile?
 
-OpenClaw CRM is a web app that works on mobile browsers. Your OpenClaw Bot works from wherever you've connected it, so if you talk to your agent from your phone (such as through a messaging app or terminal), you can manage your CRM from anywhere.
+FarbenCRM is a web app that works on mobile browsers. Your AI agent works from wherever you've connected it, so if you talk to your agent from your phone (such as through a messaging app or terminal), you can manage your CRM from anywhere.
 
 ## Getting Started
 
-1. **Deploy OpenClaw CRM:** `docker compose up -d` and seed the database.
+1. **Deploy FarbenCRM:** `docker compose up -d` and seed the database.
 2. **Import your contacts:** CSV export from Gmail, LinkedIn, or your spreadsheet.
 3. **Customize your objects:** Rename Deals to Projects, add freelancer-specific fields.
-4. **Connect your OpenClaw Bot:** Generate a skill file, drop it in. Two minutes.
+4. **Connect your AI agent:** Generate a skill file, drop it in. Two minutes.
 5. **Start talking to your agent:** After your next client call, tell your agent instead of opening the CRM.
 
 Give it one week. If you're still manually entering data after that, something went wrong.
 
-**Ready to let your OpenClaw Bot handle the CRM busywork?**
+**Ready to let your AI agent handle the CRM busywork?**
 
-[Try OpenClaw (Free, Self-Hosted)](https://github.com/openclaw-crm/openclaw-crm) | [Live Demo](https://openclaw-crm.402box.io) | [Documentation](https://openclaw-crm.402box.io/docs)
+[Try FarbenCRM (Free, Self-Hosted)](https://github.com/your-org/farbencrm) | [Live Demo](https://your-farbencrm-instance.example.com) | [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 
 **Related:**
 - [From Spreadsheet to CRM: Why Your AI Agent Needs Structured Data](/blog/spreadsheet-to-crm)
 - [Why Self-Hosting Your CRM Matters When You Run an AI Agent](/blog/why-self-hosted-crm)
-- [How to Connect Your OpenClaw Bot to OpenClaw CRM in 2 Minutes](/blog/connect-openclaw-bot-to-crm)
+- [How to Connect Your AI agent to FarbenCRM in 2 Minutes](/blog/connect-ai-agent-to-crm)

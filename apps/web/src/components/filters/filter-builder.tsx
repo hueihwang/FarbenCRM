@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { FilterCondition, FilterGroup } from "@openclaw-crm/shared";
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { FilterCondition, FilterGroup } from "@farbencrm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 import { getOperatorsForType, OPERATOR_LABELS } from "@/lib/filter-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

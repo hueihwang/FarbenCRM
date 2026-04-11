@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Check, Star, Building2 } from "lucide-react";

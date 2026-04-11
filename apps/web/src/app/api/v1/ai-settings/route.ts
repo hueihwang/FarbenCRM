@@ -5,8 +5,9 @@ import { workspaces } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 interface WorkspaceSettings {
-  openrouterApiKey?: string;
-  openrouterModel?: string;
+  anthropicApiKey?: string;
+  anthropicModel?: string;
+  tavilyApiKey?: string;
 }
 
 export async function GET(req: NextRequest) {
@@ -22,8 +23,9 @@ export async function GET(req: NextRequest) {
   const settings = (workspace?.settings ?? {}) as WorkspaceSettings;
 
   return success({
-    model: settings.openrouterModel || "anthropic/claude-sonnet-4",
-    hasApiKey: !!settings.openrouterApiKey,
+    model: settings.anthropicModel || "claude-sonnet-4-20250514",
+    hasApiKey: !!settings.anthropicApiKey,
+    hasTavilyKey: !!settings.tavilyApiKey,
   });
 }
 
@@ -35,10 +37,10 @@ export async function PATCH(req: NextRequest) {
   if (adminCheck) return adminCheck;
 
   const body = await req.json();
-  const { apiKey, model } = body as { apiKey?: string; model?: string };
+  const { apiKey, model, tavilyApiKey } = body as { apiKey?: string; model?: string; tavilyApiKey?: string };
 
-  if (!apiKey && !model) {
-    return badRequest("Provide apiKey or model");
+  if (!apiKey && !model && tavilyApiKey === undefined) {
+    return badRequest("Provide apiKey, model, or tavilyApiKey");
   }
 
   const [workspace] = await db
@@ -50,8 +52,9 @@ export async function PATCH(req: NextRequest) {
   const current = (workspace?.settings ?? {}) as WorkspaceSettings;
   const updated: WorkspaceSettings = { ...current };
 
-  if (apiKey !== undefined) updated.openrouterApiKey = apiKey;
-  if (model !== undefined) updated.openrouterModel = model;
+  if (apiKey !== undefined) updated.anthropicApiKey = apiKey;
+  if (model !== undefined) updated.anthropicModel = model;
+  if (tavilyApiKey !== undefined) updated.tavilyApiKey = tavilyApiKey;
 
   await db
     .update(workspaces)
@@ -59,7 +62,8 @@ export async function PATCH(req: NextRequest) {
     .where(eq(workspaces.id, ctx.workspaceId));
 
   return success({
-    model: updated.openrouterModel || "anthropic/claude-sonnet-4",
-    hasApiKey: !!updated.openrouterApiKey,
+    model: updated.anthropicModel || "claude-sonnet-4-20250514",
+    hasApiKey: !!updated.anthropicApiKey,
+    hasTavilyKey: !!updated.tavilyApiKey,
   });
 }

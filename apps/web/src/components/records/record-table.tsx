@@ -8,7 +8,7 @@ import {
   flexRender,
   type ColumnDef,
 } from "@tanstack/react-table";
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 import { AttributeCell } from "./attribute-cell";
 import { AttributeEditor } from "./attribute-editor";
 import { cn } from "@/lib/utils";

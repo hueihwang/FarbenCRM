@@ -1,27 +1,27 @@
 ---
-title: "OpenClaw CRM vs HubSpot: A Complete Comparison for Small Teams"
-slug: "openclaw-vs-hubspot"
-description: "Compare OpenClaw and HubSpot for small teams. Self-hosted, AI-powered CRM with no per-seat fees vs. HubSpot's tiered pricing."
+title: "FarbenCRM vs HubSpot: A Complete Comparison for Small Teams"
+slug: "farbencrm-vs-hubspot"
+description: "Compare FarbenCRM and HubSpot for small teams. Self-hosted, AI-powered CRM with no per-seat fees vs. HubSpot's tiered pricing."
 date: "2026-02-17"
-author: "OpenClaw Team"
+author: "FarbenCRM Team"
 category: "comparison"
-keywords: ["HubSpot alternative", "HubSpot alternative free", "OpenClaw vs HubSpot", "AI agent CRM", "OpenClaw Bot"]
+keywords: ["HubSpot alternative", "HubSpot alternative free", "FarbenCRM vs HubSpot", "AI agent CRM", "AI agent"]
 competitor: "hubspot"
 ---
 
-# OpenClaw CRM vs HubSpot: A Complete Comparison for Small Teams
+# FarbenCRM vs HubSpot: A Complete Comparison for Small Teams
 
 **Last updated:** February 2026
 
 HubSpot is the 800-pound gorilla of CRM. It's everywhere, it's powerful, and its free tier is genuinely useful. But here's what nobody tells you upfront: HubSpot costs $0 until it costs $1,080 per month. And for many small teams, that pricing shock happens faster than you'd think.
 
-We built OpenClaw CRM as a self-hosted, open-source alternative that you can run forever without ever hitting a paywall. This comparison will help you understand when HubSpot makes sense, when OpenClaw is a better fit, and what the real cost difference looks like.
+We built FarbenCRM as a self-hosted, open-source alternative that you can run forever without ever hitting a paywall. This comparison will help you understand when HubSpot makes sense, when FarbenCRM is a better fit, and what the real cost difference looks like.
 
 ## The Quick Summary
 
 **Choose HubSpot if:** You need marketing automation (email campaigns, landing pages), want zero infrastructure management, need extensive integrations, and are willing to pay per-seat pricing.
 
-**Choose OpenClaw if:** You want your OpenClaw Bot to manage your CRM data, you want data ownership, need AI built into your CRM, are tired of per-seat pricing, comfortable with Docker, and prefer open-source software.
+**Choose FarbenCRM if:** You want your AI agent to manage your CRM data, you want data ownership, need AI built into your CRM, are tired of per-seat pricing, comfortable with Docker, and prefer open-source software.
 
 ## HubSpot's Pricing Reality
 
@@ -50,9 +50,9 @@ Add Marketing Hub Professional for email campaigns? That's another **$800/month*
 
 Total: **$1,700/month** for a 10-person team running sales and marketing.
 
-## What You Get with OpenClaw (Open-Source, Self-Hosted)
+## What You Get with FarbenCRM (Open-Source, Self-Hosted)
 
-OpenClaw is self-hosted, which means you run it on your own server (or a $5/month VPS). There are no per-seat fees. No feature gates. No pricing tiers.
+FarbenCRM is self-hosted, which means you run it on your own server (or a $5/month VPS). There are no per-seat fees. No feature gates. No pricing tiers.
 
 Here's what's included:
 
@@ -67,7 +67,7 @@ Here's what's included:
 - **CSV import/export**: Bulk import with column mapping
 
 ### AI Chat Agent (Included)
-HubSpot charges extra for [ChatSpot](https://www.hubspot.com/products/chatspot), their AI assistant. OpenClaw's AI is built-in and free.
+HubSpot charges extra for [ChatSpot](https://www.hubspot.com/products/chatspot), their AI assistant. FarbenCRM's AI is built-in and free.
 
 - **Talk to your CRM in plain English**: "Show me all deals over $10k closing this month"
 - **8 read tools** (auto-execute): Search records, get details, browse lists
@@ -87,7 +87,7 @@ HubSpot charges extra for [ChatSpot](https://www.hubspot.com/products/chatspot),
 
 ## Feature Comparison
 
-| Feature | HubSpot Free | HubSpot Professional | OpenClaw |
+| Feature | HubSpot Free | HubSpot Professional | FarbenCRM |
 |---------|:------------:|:--------------------:|:--------:|
 | **Contact Management** | ✅ 1M contacts | ✅ Unlimited | ✅ Unlimited |
 | **Deal Pipelines** | 1 pipeline | Multiple | Unlimited |
@@ -97,7 +97,7 @@ HubSpot charges extra for [ChatSpot](https://www.hubspot.com/products/chatspot),
 | **Notes with Rich Text** | Basic | Basic | ✅ TipTap editor |
 | **Workflow Automation** | ❌ | ✅ (with limits) | API-based |
 | **AI Assistant** | ❌ | ❌ (ChatSpot add-on) | ✅ Built-in |
-| **AI Agent Integration** | ❌ | ❌ | ✅ Native (OpenClaw Bot) |
+| **AI Agent Integration** | ❌ | ❌ | ✅ Native (AI agent) |
 | **API Access** | Limited | ✅ | ✅ Full REST API |
 | **Custom Reporting** | ❌ | ✅ | Build your own |
 | **Email Marketing** | Limited (HubSpot branding) | ✅ (separate cost) | ❌ (use Resend/SendGrid) |
@@ -115,30 +115,30 @@ Let's be honest: HubSpot is better if you need:
 ### 1. **Marketing Automation at Scale**
 HubSpot's Marketing Hub is a complete marketing platform: email campaigns, landing page builder, A/B testing, ad management, social media scheduling. If you're running multi-channel campaigns, HubSpot is purpose-built for that.
 
-OpenClaw focuses on *CRM*, not marketing automation. You can integrate with Resend or SendGrid for transactional emails, but we don't compete with HubSpot's marketing suite.
+FarbenCRM focuses on *CRM*, not marketing automation. You can integrate with Resend or SendGrid for transactional emails, but we don't compete with HubSpot's marketing suite.
 
 ### 2. **Zero Infrastructure Management**
 HubSpot is fully hosted. You sign up, you're done. No servers to manage, no backups to configure, no Docker to learn.
 
-OpenClaw requires self-hosting. If you don't have anyone technical on your team, or don't want to learn Docker, HubSpot's managed hosting is a real advantage.
+FarbenCRM requires self-hosting. If you don't have anyone technical on your team, or don't want to learn Docker, HubSpot's managed hosting is a real advantage.
 
 ### 3. **Native Integrations**
 HubSpot's [App Marketplace](https://ecosystem.hubspot.com/marketplace/apps) has 1,500+ integrations. Zapier, Slack, Gmail, Outlook, Zoom, Calendly, everything just works.
 
-OpenClaw has a REST API and works with tools that support webhooks, but we don't have a native integration library (yet).
+FarbenCRM has a REST API and works with tools that support webhooks, but we don't have a native integration library (yet).
 
 ### 4. **Phone and Calling**
-HubSpot includes calling features, call recording, and transcription. OpenClaw doesn't do phone integration.
+HubSpot includes calling features, call recording, and transcription. FarbenCRM doesn't do phone integration.
 
 ### 5. **Support and SLAs**
-HubSpot offers email support (Starter), phone support (Professional), and dedicated support teams (Enterprise). OpenClaw is community-supported on GitHub.
+HubSpot offers email support (Starter), phone support (Professional), and dedicated support teams (Enterprise). FarbenCRM is community-supported on GitHub.
 
-## Where OpenClaw is Better
+## Where FarbenCRM is Better
 
 ### 1. **Data Ownership and Privacy**
 Your CRM data is the memory of your business. Every customer interaction, every deal, every note, it all lives in HubSpot's database, governed by their [terms of service](https://legal.hubspot.com/terms-of-service).
 
-With OpenClaw, your data lives on your server. You control backups, you control access, you can export everything anytime. If you're in a regulated industry (healthcare, finance, legal), this matters.
+With FarbenCRM, your data lives on your server. You control backups, you control access, you can export everything anytime. If you're in a regulated industry (healthcare, finance, legal), this matters.
 
 ### 2. **Cost at Scale**
 HubSpot's per-seat pricing compounds fast:
@@ -147,32 +147,32 @@ HubSpot's per-seat pricing compounds fast:
 - 20 users = $1,800/month
 - 50 users = $4,500/month
 
-OpenClaw costs the same for 5 users or 500 users: the cost of hosting. A $10/month VPS (DigitalOcean, Hetzner, Linode) handles most small teams. A $50/month server handles hundreds of users.
+FarbenCRM costs the same for 5 users or 500 users: the cost of hosting. A $10/month VPS (DigitalOcean, Hetzner, Linode) handles most small teams. A $50/month server handles hundreds of users.
 
 ### 3. **AI Built-In, Not Bolted On**
-HubSpot's AI tools (ChatSpot, content assistant) are add-ons that cost extra. OpenClaw's AI assistant is included. It understands your schema dynamically, can query your actual data, and supports 200+ models via OpenRouter.
+HubSpot's AI tools (ChatSpot, content assistant) are add-ons that cost extra. FarbenCRM's AI assistant is included. It understands your schema dynamically, can query your actual data, and supports 200+ models via OpenRouter.
 
 You can ask: *"Show me all companies in Austin with deals over $25k that haven't been contacted in 30 days"*, and it works.
 
 ### 4. **Customization Without Limits**
-Need a custom object type? In HubSpot, that's Enterprise-tier only ($1,200+/month). In OpenClaw, it's a built-in feature.
+Need a custom object type? In HubSpot, that's Enterprise-tier only ($1,200+/month). In FarbenCRM, it's a built-in feature.
 
-Want to modify how the CRM works? HubSpot's platform has guardrails. OpenClaw is open-source: fork it, extend it, make it yours.
+Want to modify how the CRM works? HubSpot's platform has guardrails. FarbenCRM is open-source: fork it, extend it, make it yours.
 
 ### 5. **No Forced Upgrades**
 HubSpot's pricing model is designed to push you up-tier. You start free, then realize you need automation, then reporting, then custom objects. Each upgrade costs more.
 
-OpenClaw gives you everything upfront. No surprise bills. No "this feature requires Professional."
+FarbenCRM gives you everything upfront. No surprise bills. No "this feature requires Professional."
 
 ## The Agent Integration Difference
 
-OpenClaw is the only CRM with native OpenClaw Bot integration. No other CRM, including HubSpot, lets your OpenClaw Bot manage your customer data directly.
+FarbenCRM is the only CRM with native AI agent integration. No other CRM, including HubSpot, lets your AI agent manage your customer data directly.
 
 **How it works:**
 
-1. Go to **Settings > OpenClaw** in your CRM
+1. Go to **Settings > FarbenCRM** in your CRM
 2. Generate a skill file
-3. Drop it into your OpenClaw Bot config
+3. Drop it into your AI agent config
 4. Done. 2-minute setup.
 
 **What your agent can do:**
@@ -184,11 +184,11 @@ OpenClaw is the only CRM with native OpenClaw Bot integration. No other CRM, inc
 - Create and manage tasks
 - Access 19 API endpoint categories through the skill file
 
-Your OpenClaw Bot already manages your email, calendar, and messages. Now it manages your CRM too, from wherever you already talk to your agent: terminal, chat, or whatever tools you've connected.
+Your AI agent already manages your email, calendar, and messages. Now it manages your CRM too, from wherever you already talk to your agent: terminal, chat, or whatever tools you've connected.
 
 HubSpot has ChatSpot (an add-on AI chatbot), but no agent integration. Your AI agent cannot natively create, update, or search HubSpot data through a skill file.
 
-See our step-by-step guide: [How to Connect Your OpenClaw Bot to OpenClaw CRM in 2 Minutes](/blog/connect-openclaw-bot-to-crm)
+See our step-by-step guide: [How to Connect Your AI agent to FarbenCRM in 2 Minutes](/blog/connect-ai-agent-to-crm)
 
 ## Real-World Cost Comparison
 
@@ -200,7 +200,7 @@ Let's compare the 5-year total cost of ownership for a 10-person sales team:
 - **Year 1:** $900 × 12 + $1,500 = **$12,300**
 - **5-year total:** $900 × 60 + $1,500 = **$55,500**
 
-### Scenario: OpenClaw on DigitalOcean
+### Scenario: FarbenCRM on DigitalOcean
 - **VPS cost:** $20/month (4GB RAM, 80GB SSD)
 - **Domain + SSL:** $15/year
 - **OpenRouter AI credits:** $20/month (optional)
@@ -209,7 +209,7 @@ Let's compare the 5-year total cost of ownership for a 10-person sales team:
 
 **Savings over 5 years:** $53,025
 
-Even if you pay a developer $2,000 to set up and maintain OpenClaw, you're still saving $51,000.
+Even if you pay a developer $2,000 to set up and maintain FarbenCRM, you're still saving $51,000.
 
 ## Who Should Use HubSpot
 
@@ -224,9 +224,9 @@ Use HubSpot if:
 
 HubSpot is purpose-built for sales *and* marketing teams who want an all-in-one platform with zero DevOps.
 
-## Who Should Use OpenClaw
+## Who Should Use FarbenCRM
 
-Use OpenClaw if:
+Use FarbenCRM if:
 
 - ✅ You want to own your data
 - ✅ Per-seat pricing is eating your budget (or will as you grow)
@@ -236,16 +236,16 @@ Use OpenClaw if:
 - ✅ You prefer open-source software
 - ✅ You're in a regulated industry (HIPAA, GDPR, SOC2)
 
-OpenClaw is built for teams that value control, cost efficiency, and technical flexibility.
+FarbenCRM is built for teams that value control, cost efficiency, and technical flexibility.
 
-## Getting Started with OpenClaw
+## Getting Started with FarbenCRM
 
-OpenClaw takes about 5 minutes to deploy with Docker:
+FarbenCRM takes about 5 minutes to deploy with Docker:
 
 ```bash
 # Clone the repository
-git clone https://github.com/openclaw-crm/openclaw-crm.git
-cd openclaw-crm
+git clone https://github.com/your-org/farbencrm.git
+cd farbencrm
 
 # Copy environment file
 cp .env.example apps/web/.env
@@ -264,44 +264,44 @@ pnpm db:seed
 
 Open `http://localhost:3001` and create an account. No credit card. No sales call. No per-seat pricing.
 
-**Prefer not to self-host?** Sign up at [openclaw-crm.402box.io](https://openclaw-crm.402box.io) for a hosted instance with no setup. Same features, no infrastructure required. Connect your OpenClaw Bot from there.
+**Prefer not to self-host?** Sign up at [your FarbenCRM instance](https://your-farbencrm-instance.example.com) for a hosted instance with no setup. Same features, no infrastructure required. Connect your AI agent from there.
 
 ### Setting Up the AI Assistant
 1. Get a free API key from [OpenRouter](https://openrouter.ai) (pay-as-you-go, ~$0.50/1K requests)
-2. Go to **Settings → AI** in OpenClaw
+2. Go to **Settings → AI** in FarbenCRM
 3. Enter your API key and select a model (Claude, GPT-4o, Llama, etc.)
 4. Navigate to `/chat` and start asking questions
 
 ## FAQ
 
-### Can I migrate from HubSpot to OpenClaw?
-Yes. HubSpot lets you export contacts, companies, and deals as CSV. OpenClaw has a CSV import wizard with column mapping and type coercion. You'll need to manually recreate pipelines and custom fields, but the data transfer is straightforward.
+### Can I migrate from HubSpot to FarbenCRM?
+Yes. HubSpot lets you export contacts, companies, and deals as CSV. FarbenCRM has a CSV import wizard with column mapping and type coercion. You'll need to manually recreate pipelines and custom fields, but the data transfer is straightforward.
 
-### Does OpenClaw support email sending?
-OpenClaw doesn't include email marketing (campaigns, sequences). For transactional emails, integrate with [Resend](https://resend.com) or [SendGrid](https://sendgrid.com). For email marketing, consider [Loops](https://loops.so) or [Mailchimp](https://mailchimp.com).
+### Does FarbenCRM support email sending?
+FarbenCRM doesn't include email marketing (campaigns, sequences). For transactional emails, integrate with [Resend](https://resend.com) or [SendGrid](https://sendgrid.com). For email marketing, consider [Loops](https://loops.so) or [Mailchimp](https://mailchimp.com).
 
 ### What about backups?
 You're responsible for backups since it's self-hosted. PostgreSQL has built-in backup tools (`pg_dump`), and most hosting providers offer automated snapshots. We recommend daily automated backups to S3 or Backblaze B2.
 
-### Is there a hosted version of OpenClaw?
-Yes. Sign up at [openclaw-crm.402box.io](https://openclaw-crm.402box.io) for a hosted instance with no setup required. Same features as self-hosted. You can connect your OpenClaw Bot and use the web UI as your frontend for everything the bot adds.
+### Is there a hosted version of FarbenCRM?
+Yes. Sign up at [your FarbenCRM instance](https://your-farbencrm-instance.example.com) for a hosted instance with no setup required. Same features as self-hosted. You can connect your AI agent and use the web UI as your frontend for everything the bot adds.
 
-### Can I use OpenClaw for free?
-Yes. OpenClaw is MIT-licensed open-source software. You can use it commercially, modify it, and redistribute it without restrictions. The only cost is hosting (your own server or a VPS).
+### Can I use FarbenCRM for free?
+Yes. FarbenCRM is MIT-licensed open-source software. You can use it commercially, modify it, and redistribute it without restrictions. The only cost is hosting (your own server or a VPS).
 
 ## Final Thoughts
 
 HubSpot is an excellent CRM if you need marketing automation, native integrations, and zero DevOps. It's designed for teams that want an all-in-one platform and are willing to pay per-seat pricing.
 
-OpenClaw is built for teams that value data ownership, cost efficiency, and technical control. If you're comfortable with self-hosting and want a CRM that grows with you without monthly per-seat fees, OpenClaw is worth trying.
+FarbenCRM is built for teams that value data ownership, cost efficiency, and technical control. If you're comfortable with self-hosting and want a CRM that grows with you without monthly per-seat fees, FarbenCRM is worth trying.
 
-The good news? HubSpot and OpenClaw solve different problems. If you need both, use HubSpot for marketing automation and OpenClaw for your core CRM. Export HubSpot contacts to OpenClaw, manage your pipeline there, and keep HubSpot for campaigns.
+The good news? HubSpot and FarbenCRM solve different problems. If you need both, use HubSpot for marketing automation and FarbenCRM for your core CRM. Export HubSpot contacts to FarbenCRM, manage your pipeline there, and keep HubSpot for campaigns.
 
-**Ready to try OpenClaw?**
+**Ready to try FarbenCRM?**
 
-→ [GitHub Repository](https://github.com/openclaw-crm/openclaw-crm)
-→ [Live Demo](https://openclaw-crm.402box.io)
-→ [Documentation](https://openclaw-crm.402box.io/docs)
+→ [GitHub Repository](https://github.com/your-org/farbencrm)
+→ [Live Demo](https://your-farbencrm-instance.example.com)
+→ [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 

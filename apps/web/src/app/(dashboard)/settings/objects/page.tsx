@@ -11,7 +11,7 @@ import {
   Box,
   Lock,
 } from "lucide-react";
-import { ATTRIBUTE_TYPES } from "@openclaw-crm/shared";
+import { ATTRIBUTE_TYPES } from "@farbencrm/shared";
 
 interface Attribute {
   id: string;

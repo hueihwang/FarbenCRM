@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 import {
   Dialog,
   DialogContent,

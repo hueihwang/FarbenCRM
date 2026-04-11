@@ -1,5 +1,5 @@
-import type { AttributeType } from "@openclaw-crm/shared";
-import type { FilterCondition } from "@openclaw-crm/shared";
+import type { AttributeType } from "@farbencrm/shared";
+import type { FilterCondition } from "@farbencrm/shared";
 
 /** Get available operators for a given attribute type */
 export function getOperatorsForType(type: AttributeType): FilterCondition["operator"][] {

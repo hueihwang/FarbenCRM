@@ -1,12 +1,12 @@
-# OpenClaw CRM:Complete Product Documentation
+# FarbenCRM:Complete Product Documentation
 # Version: 1.0
 # For product overview: /llms.txt
 # For API endpoint reference only, see: /llms-api.txt
 # OpenAPI spec: /openapi.json
 
-## What is OpenClaw CRM?
+## What is FarbenCRM?
 
-OpenClaw CRM is a free, open-source, self-hosted CRM (Customer Relationship Manager). It is a clone of Attio (attio.com) designed for everyday users. It runs on your own server:no vendor lock-in, no per-seat pricing, no data leaving your infrastructure.
+FarbenCRM is a free, open-source, self-hosted CRM (Customer Relationship Manager). It is a clone of Attio (attio.com) designed for everyday users. It runs on your own server:no vendor lock-in, no per-seat pricing, no data leaving your infrastructure.
 
 Stack: Next.js 15, TypeScript, PostgreSQL, Drizzle ORM, Better Auth, shadcn/ui, TanStack Table, dnd-kit, TipTap.
 
@@ -24,7 +24,7 @@ Records are individual entries within an object. A person is a record in the Peo
 Attributes are the fields (columns) on an object. Each attribute has a type that determines what kind of data it stores and how it's displayed.
 
 ### Typed EAV Data Model
-OpenClaw CRM uses a hybrid typed Entity-Attribute-Value model. The `record_values` table stores values per-attribute with typed columns:
+FarbenCRM uses a hybrid typed Entity-Attribute-Value model. The `record_values` table stores values per-attribute with typed columns:
 - text_value (text, email_address, phone_number, domain, location)
 - number_value (number, currency, rating)
 - date_value (date)
@@ -155,7 +155,7 @@ This allows unlimited custom attributes without schema migrations.
 
 - Better Auth with email/password registration
 - Session-based auth with cookies (better-auth.session_token)
-- API key auth for programmatic access (Authorization: Bearer oc_sk_...)
+- API key auth for programmatic access (Authorization: Bearer fc_sk_...)
 - Middleware redirects unauthenticated users to /login
 - Workspace selection after login (cookie: active-workspace-id)
 
@@ -188,7 +188,7 @@ This allows unlimited custom attributes without schema migrations.
 ## API Reference
 
 Base URL: http://localhost:3001
-Auth: Bearer token:Authorization: Bearer oc_sk_<token>
+Auth: Bearer token:Authorization: Bearer fc_sk_<token>
 Create API keys at Settings > API Keys.
 
 ### Response Format

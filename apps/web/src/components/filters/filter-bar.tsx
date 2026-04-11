@@ -1,7 +1,7 @@
 "use client";
 
-import type { FilterCondition, FilterGroup } from "@openclaw-crm/shared";
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { FilterCondition, FilterGroup } from "@farbencrm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 import { OPERATOR_LABELS } from "@/lib/filter-utils";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";

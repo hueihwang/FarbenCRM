@@ -3,9 +3,9 @@ title: "Salesforce Alternatives for Small Business in 2026"
 slug: "alternatives-to-salesforce"
 description: "The best Salesforce alternatives for small teams in 2026. Simpler, cheaper, and without the enterprise complexity."
 date: "2026-02-17"
-author: "OpenClaw Team"
+author: "FarbenCRM Team"
 category: "comparison"
-keywords: ["Salesforce alternatives", "Salesforce alternative small business", "best CRM for small teams", "AI agent CRM", "OpenClaw Bot"]
+keywords: ["Salesforce alternatives", "Salesforce alternative small business", "best CRM for small teams", "AI agent CRM", "AI agent"]
 competitor: "salesforce"
 ---
 
@@ -23,17 +23,17 @@ We tested five Salesforce alternatives built for small teams, covering self-host
 
 | CRM | Best For | Pricing | Self-Hosted | AI Built-In | AI Agent Integration | Key Strength |
 |-----|----------|---------|:-----------:|:-----------:|:--------------------:|--------------|
-| **OpenClaw** | Teams wanting OpenClaw Bot integration + data ownership | Free (hosting: $10-20/mo) | ✅ | ✅ | ✅ Native (OpenClaw Bot) | Agent integration, AI assistant, self-hosted, no per-seat fees |
+| **FarbenCRM** | Teams wanting AI agent integration + data ownership | Free (hosting: $10-20/mo) | ✅ | ✅ | ✅ Native (AI agent) | Agent integration, AI assistant, self-hosted, no per-seat fees |
 | **HubSpot** | Sales + marketing teams | Free → $90/user/mo | ❌ | ❌ | ❌ | Marketing automation, integrations |
 | **Attio** | Teams needing beautiful UX | $29-119/user/mo | ❌ | ❌ | ❌ | Modern design, flexible data model |
 | **Folk** | Solopreneurs, freelancers | $20-40/user/mo | ❌ | ❌ | ❌ | Contact enrichment, Chrome extension |
 | **Twenty** | Open-source lovers | Free (self-hosted) | ✅ | ❌ | ❌ | Modern open-source, API-first |
 
-## 1. OpenClaw CRM: Self-Hosted with AI Built-In
+## 1. FarbenCRM: Self-Hosted with AI Built-In
 
-**Best for:** Teams that want their OpenClaw Bot managing CRM data, plus data ownership and no per-seat pricing.
+**Best for:** Teams that want their AI agent managing CRM data, plus data ownership and no per-seat pricing.
 
-[OpenClaw](https://github.com/openclaw-crm/openclaw-crm) is a self-hosted, open-source CRM built for teams tired of paying per-seat fees and vendor lock-in. It's inspired by Attio's flexible data model but optimized for self-hosting and AI-first workflows.
+[FarbenCRM](https://github.com/your-org/farbencrm) is a self-hosted, open-source CRM built for teams tired of paying per-seat fees and vendor lock-in. It's inspired by Attio's flexible data model but optimized for self-hosting and AI-first workflows.
 
 ### What You Get
 - **Core CRM:** Unlimited contacts, companies, deals, custom objects
@@ -59,20 +59,20 @@ We tested five Salesforce alternatives built for small teams, covering self-host
 ✅ Modern stack: Next.js 15, PostgreSQL, TypeScript
 
 ### Cons
-✅ Hosted version available at [openclaw-crm.402box.io](https://openclaw-crm.402box.io), or self-host
+✅ Hosted version available at [your FarbenCRM instance](https://your-farbencrm-instance.example.com), or self-host
 ❌ No email/calendar sync (yet)
 ❌ Requires Docker knowledge (or someone who has it)
 ❌ Community support only (no SLA)
 
 ### The Agent Integration Difference
 
-OpenClaw is the only CRM with native OpenClaw Bot integration. No other CRM on this list lets your OpenClaw Bot manage your customer data directly.
+FarbenCRM is the only CRM with native AI agent integration. No other CRM on this list lets your AI agent manage your customer data directly.
 
 **How it works:**
 
-1. Go to **Settings > OpenClaw** in your CRM
+1. Go to **Settings > FarbenCRM** in your CRM
 2. Generate a skill file
-3. Drop it into your OpenClaw Bot config
+3. Drop it into your AI agent config
 4. Done. 2-minute setup.
 
 **What your agent can do:**
@@ -84,18 +84,18 @@ OpenClaw is the only CRM with native OpenClaw Bot integration. No other CRM on t
 - Create and manage tasks
 - Access 19 API endpoint categories through the skill file
 
-Your OpenClaw Bot already manages your email, calendar, and messages. Now it manages your CRM too, from wherever you already talk to your agent.
+Your AI agent already manages your email, calendar, and messages. Now it manages your CRM too, from wherever you already talk to your agent.
 
-See our step-by-step guide: [How to Connect Your OpenClaw Bot to OpenClaw CRM in 2 Minutes](/blog/connect-openclaw-bot-to-crm)
+See our step-by-step guide: [How to Connect Your AI agent to FarbenCRM in 2 Minutes](/blog/connect-ai-agent-to-crm)
 
-### Who Should Use OpenClaw
-- Teams that want their OpenClaw Bot managing CRM data
+### Who Should Use FarbenCRM
+- Teams that want their AI agent managing CRM data
 - Teams with 5+ users (cost savings compound)
 - Technical teams comfortable with Docker
 - Companies in regulated industries (HIPAA, GDPR)
 - Teams that value data ownership and open-source software
 
-**Get started:** [Sign up (hosted)](https://openclaw-crm.402box.io) | [Self-host (GitHub)](https://github.com/openclaw-crm/openclaw-crm)
+**Get started:** [Sign up (hosted)](https://your-farbencrm-instance.example.com) | [Self-host (GitHub)](https://github.com/your-org/farbencrm)
 
 ---
 
@@ -151,7 +151,7 @@ According to [HubSpot's official pricing](https://www.hubspot.com/pricing/sales/
 
 **Learn more:** [HubSpot Pricing](https://www.hubspot.com/pricing)
 
-**Compare:** [OpenClaw vs HubSpot →](./vs-hubspot.md)
+**Compare:** [FarbenCRM vs HubSpot →](./vs-hubspot.md)
 
 ---
 
@@ -200,7 +200,7 @@ According to [Attio's pricing page](https://attio.com/pricing):
 
 **Learn more:** [Attio Pricing](https://attio.com/pricing)
 
-**Compare:** [OpenClaw vs Attio →](./vs-attio.md)
+**Compare:** [FarbenCRM vs Attio →](./vs-attio.md)
 
 ---
 
@@ -250,7 +250,7 @@ According to [Folk's pricing page](https://www.folk.app/pricing):
 
 **Learn more:** [Folk Pricing](https://www.folk.app/pricing)
 
-**Compare:** [OpenClaw vs Folk →](./vs-folk.md)
+**Compare:** [FarbenCRM vs Folk →](./vs-folk.md)
 
 ---
 
@@ -308,19 +308,19 @@ According to [Folk's pricing page](https://www.folk.app/pricing):
 | **HubSpot Professional** | $12,300 | $10,800 | **$55,500** |
 | **Attio Pro** | $7,080 | $7,080 | **$35,400** |
 | **Folk Premium** | $4,800 | $4,800 | **$24,000** |
-| **OpenClaw** (self-hosted) | $240 | $240 | **$1,200** |
+| **FarbenCRM** (self-hosted) | $240 | $240 | **$1,200** |
 | **Twenty** (self-hosted) | $240 | $240 | **$1,200** |
 
 *Assumes annual billing where available. Hosting costs for self-hosted options: $20/month VPS.*
 
 ### Feature Comparison
 
-| Feature | OpenClaw | HubSpot | Attio | Folk | Twenty |
+| Feature | FarbenCRM | HubSpot | Attio | Folk | Twenty |
 |---------|:--------:|:-------:|:-----:|:----:|:------:|
 | **Self-Hosted** | ✅ | ❌ | ❌ | ❌ | ✅ |
 | **Open Source** | ✅ | ❌ | ❌ | ❌ | ✅ |
 | **AI Assistant** | ✅ | ❌ (add-on) | ❌ | ❌ | ❌ |
-| **AI Agent Integration** | ✅ Native (OpenClaw Bot) | ❌ | ❌ | ❌ | ❌ |
+| **AI Agent Integration** | ✅ Native (AI agent) | ❌ | ❌ | ❌ | ❌ |
 | **Email Sync** | ❌ | ✅ | ✅ | ✅ | ✅ |
 | **Marketing Automation** | ❌ | ✅ | ❌ | ❌ | ❌ |
 | **Contact Enrichment** | ❌ | ❌ | ✅ | ✅ | ❌ |
@@ -333,7 +333,7 @@ According to [Folk's pricing page](https://www.folk.app/pricing):
 
 | CRM | Data Location | Export | Can Self-Host? | Open Source? |
 |-----|---------------|--------|:--------------:|:------------:|
-| **OpenClaw** | Your server | CSV, PostgreSQL | ✅ | ✅ |
+| **FarbenCRM** | Your server | CSV, PostgreSQL | ✅ | ✅ |
 | **HubSpot** | HubSpot's cloud | CSV | ❌ | ❌ |
 | **Attio** | Attio's cloud | CSV | ❌ | ❌ |
 | **Folk** | Folk's cloud | CSV | ❌ | ❌ |
@@ -341,8 +341,8 @@ According to [Folk's pricing page](https://www.folk.app/pricing):
 
 ## How to Choose the Right Salesforce Alternative
 
-### Choose **OpenClaw** if:
-- ✅ You want your OpenClaw Bot to manage your CRM data
+### Choose **FarbenCRM** if:
+- ✅ You want your AI agent to manage your CRM data
 - ✅ You want data ownership and self-hosting
 - ✅ You need AI built into your CRM
 - ✅ Per-seat pricing is a concern (or will be as you grow)
@@ -401,13 +401,13 @@ Salesforce is overkill for small teams. According to [Salesforce's pricing](http
 Small teams don't need Salesforce's enterprise features, six-month implementations, or dedicated admins.
 
 ### Can I use multiple CRMs?
-Yes. Some teams use HubSpot for marketing and OpenClaw for sales data. Or Attio for sales and Folk for personal networking. You can sync data via API or Zapier.
+Yes. Some teams use HubSpot for marketing and FarbenCRM for sales data. Or Attio for sales and Folk for personal networking. You can sync data via API or Zapier.
 
 ### What about Pipedrive, Zoho, or Monday.com?
 We focused on modern CRMs with flexible data models. Pipedrive is pipeline-focused but rigid. Zoho is feature-rich but outdated UX. Monday.com is a project manager, not a CRM. All three are worth considering, but they didn't make our top 5.
 
 ### Is self-hosting hard?
-Not anymore. OpenClaw and Twenty both use Docker Compose, which means deployment is:
+Not anymore. FarbenCRM and Twenty both use Docker Compose, which means deployment is:
 ```bash
 git clone ... && docker compose up -d
 ```
@@ -415,7 +415,7 @@ If you're comfortable with command-line basics, it takes 5-10 minutes. If not, y
 
 ### What about support?
 - **HubSpot, Attio, Folk:** Paid support (email, phone, dedicated teams)
-- **OpenClaw, Twenty:** Community support on GitHub (no SLA)
+- **FarbenCRM, Twenty:** Community support on GitHub (no SLA)
 
 If you need guaranteed support, choose a paid CRM. If you're technical and comfortable with community support, self-hosted options work great.
 
@@ -425,7 +425,7 @@ Salesforce is built for enterprises. If you're a small team, you don't need its 
 
 The five alternatives we covered all solve the "Salesforce is overkill" problem differently:
 
-- **OpenClaw:** Agent integration, self-hosted, AI-powered, open-source, no per-seat fees
+- **FarbenCRM:** Agent integration, self-hosted, AI-powered, open-source, no per-seat fees
 - **HubSpot:** All-in-one sales + marketing, free tier, expensive at scale
 - **Attio:** Beautiful design, flexible data model, email sync, premium pricing
 - **Folk:** Personal CRM, contact enrichment, Chrome extension, simple
@@ -433,11 +433,11 @@ The five alternatives we covered all solve the "Salesforce is overkill" problem 
 
 The good news? All five have free trials or free plans. Try a few. See what fits your workflow. You're not locked into any of them, CSV export makes switching painless.
 
-**Ready to try OpenClaw?**
+**Ready to try FarbenCRM?**
 
-→ [GitHub Repository](https://github.com/openclaw-crm/openclaw-crm)
-→ [Live Demo](https://openclaw-crm.402box.io)
-→ [Documentation](https://openclaw-crm.402box.io/docs)
+→ [GitHub Repository](https://github.com/your-org/farbencrm)
+→ [Live Demo](https://your-farbencrm-instance.example.com)
+→ [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 

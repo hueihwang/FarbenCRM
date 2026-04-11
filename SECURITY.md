@@ -2,14 +2,14 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in OpenClaw CRM, please report it responsibly.
+If you discover a security vulnerability in FarbenCRM, please report it responsibly.
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
 Instead, please:
 
-1. **Email us at:** security@openclaw-crm.dev
-2. **Or open a private security advisory** on GitHub: https://github.com/giorgosn/openclaw-crm/security/advisories/new
+1. **Email us at:** security@farbencrm.dev
+2. **Or open a private security advisory** on GitHub: https://github.com/your-org/farbencrm/security/advisories/new
 
 ### What to include
 
@@ -36,11 +36,11 @@ Older versions are not supported. Please upgrade to the latest release.
 
 ## Security Considerations for Self-Hosting
 
-OpenClaw CRM is designed for **self-hosted deployment**. As the operator, you are responsible for:
+FarbenCRM is designed for **self-hosted deployment**. As the operator, you are responsible for:
 
 ### 1. Keep your deployment updated
 - Watch the GitHub repository for security releases
-- Subscribe to security advisories: https://github.com/giorgosn/openclaw-crm/security/advisories
+- Subscribe to security advisories: https://github.com/your-org/farbencrm/security/advisories
 - Upgrade to the latest version promptly
 
 ### 2. Secure your PostgreSQL database
@@ -51,7 +51,7 @@ OpenClaw CRM is designed for **self-hosted deployment**. As the operator, you ar
 - Regular database backups
 
 ### 3. Use HTTPS in production
-- OpenClaw CRM should always run behind HTTPS in production
+- FarbenCRM should always run behind HTTPS in production
 - Use a reverse proxy like Nginx or Caddy with automatic HTTPS (Let's Encrypt)
 - Set `BETTER_AUTH_TRUSTED_ORIGINS` to your HTTPS domain(s)
 
@@ -100,10 +100,10 @@ Never use the example secret from `.env.example` in production.
 ### 7. Regular backups
 ```bash
 # Backup PostgreSQL database
-docker compose exec db pg_dump -U postgres openclaw > backup.sql
+docker compose exec db pg_dump -U postgres farbencrm > backup.sql
 
 # Restore from backup
-docker compose exec -T db psql -U postgres openclaw < backup.sql
+docker compose exec -T db psql -U postgres farbencrm < backup.sql
 ```
 
 Automate backups with cron or a backup service.
@@ -116,13 +116,13 @@ Automate backups with cron or a backup service.
 ## Common Security Issues
 
 ### API Key Exposure
-- API keys start with `oc_sk_` and grant full access to the workspace
+- API keys start with `fc_sk_` and grant full access to the workspace
 - Store API keys securely (password manager, environment variables)
 - Revoke API keys if compromised (Settings → API Keys)
 - Use separate API keys per integration (easier to revoke)
 
 ### SQL Injection
-- OpenClaw uses Drizzle ORM with parameterized queries (safe by default)
+- FarbenCRM uses Drizzle ORM with parameterized queries (safe by default)
 - Do not bypass the ORM and write raw SQL unless necessary
 - If writing raw SQL, use parameterized queries: `db.execute(sql`SELECT * FROM users WHERE id = ${userId}`)`
 
@@ -137,7 +137,7 @@ Automate backups with cron or a backup service.
 - No additional CSRF tokens needed for API routes
 
 ### Rate Limiting
-- OpenClaw does not include built-in rate limiting (planned for future)
+- FarbenCRM does not include built-in rate limiting (planned for future)
 - Use a reverse proxy (Nginx, Caddy) with rate limiting:
   ```nginx
   limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
@@ -167,10 +167,10 @@ We follow responsible disclosure practices:
 4. We publish a security advisory
 5. You receive credit (unless you prefer anonymity)
 
-Thank you for helping keep OpenClaw CRM secure!
+Thank you for helping keep FarbenCRM secure!
 
 ## Contact
 
-- **Security email:** security@openclaw-crm.dev
-- **GitHub Security Advisories:** https://github.com/giorgosn/openclaw-crm/security/advisories
-- **General questions:** https://github.com/giorgosn/openclaw-crm/discussions
+- **Security email:** security@farbencrm.dev
+- **GitHub Security Advisories:** https://github.com/your-org/farbencrm/security/advisories
+- **General questions:** https://github.com/your-org/farbencrm/discussions

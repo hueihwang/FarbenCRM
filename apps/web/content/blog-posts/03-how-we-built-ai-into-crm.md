@@ -1,22 +1,22 @@
 ---
-title: "Two Ways AI Works in OpenClaw CRM: Built-in Assistant and Agent Integration"
+title: "Two Ways AI Works in FarbenCRM: Built-in Assistant and Agent Integration"
 slug: "how-we-built-ai-into-crm"
-description: "A technical deep-dive into OpenClaw CRM's two AI systems: a built-in tool-calling assistant with dynamic schema awareness, and external agent integration through the OpenClaw Bot skill file system."
+description: "A technical deep-dive into FarbenCRM's two AI systems: a built-in tool-calling assistant with dynamic schema awareness, and external agent integration through the AI agent skill file system."
 date: "2026-02-17"
-author: "OpenClaw Team"
+author: "FarbenCRM Team"
 category: "engineering"
-keywords: ["AI CRM", "AI agent CRM", "OpenClaw Bot integration", "CRM AI assistant", "tool calling", "LLM agents", "AI assistant", "OpenRouter", "skill file", "agent-native CRM"]
+keywords: ["AI CRM", "AI agent CRM", "AI agent integration", "CRM AI assistant", "tool calling", "LLM agents", "AI assistant", "OpenRouter", "skill file", "agent-native CRM"]
 ---
 
-# Two Ways AI Works in OpenClaw CRM: Built-in Assistant and Agent Integration
+# Two Ways AI Works in FarbenCRM: Built-in Assistant and Agent Integration
 
 **Last updated:** February 2026
 
-There are two distinct AI stories in OpenClaw CRM, and they solve different problems.
+There are two distinct AI stories in FarbenCRM, and they solve different problems.
 
 The first: a built-in AI assistant inside the CRM web UI. You open the chat panel, ask a question in plain English, and the assistant queries your data, creates records, or updates deals. It uses tool calling (not RAG), streams responses over SSE, and requires confirmation before any write operation.
 
-The second: external agent integration through OpenClaw Bot. Your agent, running in a terminal or connected to whatever tools you use, gets a skill file that teaches it the entire CRM API. Generate the file, drop it into your agent config, and your agent can manage contacts, deals, tasks, and notes from wherever you already talk to it.
+The second: external agent integration through AI agent. Your agent, running in a terminal or connected to whatever tools you use, gets a skill file that teaches it the entire CRM API. Generate the file, drop it into your agent config, and your agent can manage contacts, deals, tasks, and notes from wherever you already talk to it.
 
 This post is a technical deep-dive into both systems. If you're building AI features into your own product, or you want to understand how the integration works before setting it up, this is where to start.
 
@@ -45,9 +45,9 @@ When you're inside the CRM, the assistant lives in the chat panel. It has 13 too
 
 Read tools execute immediately. Write tools show a confirmation card in the UI: you review the action, click Confirm or Cancel. No data changes without your approval.
 
-### External Agent Integration (OpenClaw Bot)
+### External Agent Integration (AI agent)
 
-When you're outside the CRM, your OpenClaw Bot handles it. The agent uses a skill file that documents the full REST API: 19 endpoint categories covering workspaces, objects, records, search, tasks, notes, lists, and notifications.
+When you're outside the CRM, your AI agent handles it. The agent uses a skill file that documents the full REST API: 19 endpoint categories covering workspaces, objects, records, search, tasks, notes, lists, and notifications.
 
 The skill file is a Markdown document with YAML frontmatter. The agent reads it, understands the API structure, and makes HTTP requests on your behalf. No SDK, no special client library. Just REST calls with a Bearer token.
 
@@ -57,7 +57,7 @@ Here's what that looks like in practice:
 > add the people from yesterday's meeting to the CRM
 
   Found 3 contacts in your meeting notes.
-  Creating records in OpenClaw CRM...
+  Creating records in FarbenCRM...
 
   done Sarah Chen, Meridian Health Group
   done Alex Dumont, Sterling & Co
@@ -69,7 +69,7 @@ Here's what that looks like in practice:
 ```
 > show me all deals closing this month
 
-  Querying OpenClaw CRM...
+  Querying FarbenCRM...
 
   3 deals closing before Feb 28:
   - Northwind ($89k, Negotiation)
@@ -142,7 +142,7 @@ export async function buildSystemPrompt(workspaceId: string): Promise<string> {
     })
   );
 
-  return `You are an AI assistant for OpenClaw CRM...
+  return `You are an AI assistant for FarbenCRM...
 
 Available object types and their attributes:
 ${objectDetails.join("\n\n")}
@@ -279,7 +279,7 @@ data: {"tool_result":{"id":"call_123","result":[...]}}
 
 The assistant uses OpenRouter instead of direct OpenAI or Anthropic APIs. Model flexibility: users choose from Claude, GPT-4o, Llama, Gemini, and 200+ other models. One API integration, every model available. Set an OpenRouter API key and pick a model in workspace settings.
 
-## Architecture: OpenClaw Bot Integration
+## Architecture: AI agent Integration
 
 The external agent integration is architecturally different from the built-in assistant. Instead of tools defined in TypeScript, the agent learns the API from a skill file: a Markdown document with structured instructions.
 
@@ -289,8 +289,8 @@ The skill file is a `SKILL.md` with YAML frontmatter:
 
 ```yaml
 ---
-name: openclaw
-description: Interact with OpenClaw CRM, manage workspaces,
+name: farbencrm
+description: Interact with FarbenCRM, manage workspaces,
   records, contacts, companies, deals, tasks, notes, and lists.
 homepage: https://your-instance.com
 user-invocable: true
@@ -298,13 +298,13 @@ metadata:
   clawdbot:
     requires:
       env:
-        - OPENCLAW_API_URL
-        - OPENCLAW_API_KEY
+        - FARBENCRM_API_URL
+        - FARBENCRM_API_KEY
 ---
 ```
 
 The frontmatter declares:
-- **name**: the skill identifier (`openclaw`)
+- **name**: the skill identifier (`farbencrm`)
 - **description**: what the skill does (the agent reads this to decide when to invoke it)
 - **homepage**: the CRM instance URL
 - **user-invocable**: whether users can explicitly request this skill
@@ -334,10 +334,10 @@ Every endpoint includes the HTTP method, path, parameters, and expected request/
 
 Two environment variables power the integration:
 
-- `OPENCLAW_API_URL`: the base URL of your CRM instance (e.g., `https://crm.yourcompany.com`)
-- `OPENCLAW_API_KEY`: a workspace-scoped API key (prefixed with `oc_sk_`)
+- `FARBENCRM_API_URL`: the base URL of your CRM instance (e.g., `https://crm.yourcompany.com`)
+- `FARBENCRM_API_KEY`: a workspace-scoped API key (prefixed with `fc_sk_`)
 
-API keys are generated in Settings > API Keys inside the CRM. Each key is scoped to a single workspace. All requests include `Authorization: Bearer $OPENCLAW_API_KEY`.
+API keys are generated in Settings > API Keys inside the CRM. Each key is scoped to a single workspace. All requests include `Authorization: Bearer $FARBENCRM_API_KEY`.
 
 The response envelope is consistent across all endpoints:
 - Success: `{ "data": ... }`
@@ -345,7 +345,7 @@ The response envelope is consistent across all endpoints:
 
 ### How the Agent Uses the Skill File
 
-When you ask your OpenClaw Bot to do something CRM-related, it recognizes the request matches the `openclaw` skill, reads the skill file, plans a sequence of API calls, executes them over HTTP, and formats the results.
+When you ask your AI agent to do something CRM-related, it recognizes the request matches the `farbencrm` skill, reads the skill file, plans a sequence of API calls, executes them over HTTP, and formats the results.
 
 For "add the people from yesterday's meeting to the CRM," the agent reads its meeting notes (from another skill or context), calls `GET /api/v1/objects/people/attributes` to learn the schema, calls `POST /api/v1/objects/people/records` once per contact, and returns a summary.
 
@@ -353,27 +353,27 @@ The agent chains operations naturally because it has the full API documentation 
 
 ### Setup: 2 Minutes
 
-1. Go to Settings > OpenClaw in the CRM
+1. Go to Settings > FarbenCRM in the CRM
 2. Select an API key (or create one in Settings > API Keys)
 3. Download the generated SKILL.md
-4. Place it at `~/.openclaw/skills/openclaw/SKILL.md`
-5. Add the config to your `openclaw.json`:
+4. Place it at `~/.config/farbencrm/skills/farbencrm/SKILL.md`
+5. Add the config to your `farbencrm.json`:
 
 ```json
 {
   "skills": {
-    "openclaw": {
+    "farbencrm": {
       "enabled": true,
       "env": {
-        "OPENCLAW_API_URL": "https://your-instance.com",
-        "OPENCLAW_API_KEY": "oc_sk_your_key_here"
+        "FARBENCRM_API_URL": "https://your-instance.com",
+        "FARBENCRM_API_KEY": "fc_sk_your_key_here"
       }
     }
   }
 }
 ```
 
-6. Restart your OpenClaw Bot
+6. Restart your AI agent
 
 The CRM generates the skill file with your instance URL pre-filled. The only manual step is pasting your API key into the config.
 
@@ -432,7 +432,7 @@ The full assistant is around 800 lines of TypeScript:
 ### Agent Integration
 
 The skill file system:
-- `app/(dashboard)/settings/openclaw/page.tsx`: skill file generator UI
+- `app/(dashboard)/settings/farbencrm/page.tsx`: skill file generator UI
 - Generated `SKILL.md`: the skill file itself (around 350 lines of Markdown)
 - `app/api/v1/*`: the 33 REST endpoints the agent calls
 
@@ -442,13 +442,13 @@ External dependencies: OpenRouter API (for the built-in assistant), Drizzle ORM 
 
 **Built-in assistant**: open the CRM, navigate to [Chat](/chat), and start asking questions.
 
-**Agent integration**: go to [Settings > OpenClaw](/settings/openclaw), generate your skill file, and connect your OpenClaw Bot. Two minutes. For the full walkthrough, see [How to Connect Your OpenClaw Bot to OpenClaw CRM in 2 Minutes](/blog/connect-openclaw-bot-to-crm).
+**Agent integration**: go to [Settings > FarbenCRM](/settings/farbencrm), generate your skill file, and connect your AI agent. Two minutes. For the full walkthrough, see [How to Connect Your AI agent to FarbenCRM in 2 Minutes](/blog/connect-ai-agent-to-crm).
 
 Both systems work independently. Use one or both. The CRM is the same underneath.
 
 ---
 
-[OpenClaw on GitHub](https://github.com/openclaw-crm/openclaw-crm) | [Live Demo](https://openclaw-crm.402box.io/chat) | [Full AI Service Code](https://github.com/openclaw-crm/openclaw-crm/blob/main/apps/web/src/services/ai-chat.ts)
+[FarbenCRM on GitHub](https://github.com/your-org/farbencrm) | [Live Demo](https://your-farbencrm-instance.example.com/chat) | [Full AI Service Code](https://github.com/your-org/farbencrm/blob/main/apps/web/src/services/ai-chat.ts)
 
 ---
 

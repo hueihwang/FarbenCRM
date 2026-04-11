@@ -1,6 +1,6 @@
 import { sql, eq, and, or, type SQL } from "drizzle-orm";
-import { ATTRIBUTE_TYPE_COLUMN_MAP, type AttributeType } from "@openclaw-crm/shared";
-import type { FilterCondition, FilterGroup, SortConfig } from "@openclaw-crm/shared";
+import { ATTRIBUTE_TYPE_COLUMN_MAP, type AttributeType } from "@farbencrm/shared";
+import type { FilterCondition, FilterGroup, SortConfig } from "@farbencrm/shared";
 
 interface AttributeInfo {
   id: string;

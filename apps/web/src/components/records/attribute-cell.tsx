@@ -1,6 +1,6 @@
 "use client";
 
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Star, ExternalLink } from "lucide-react";
 import { extractPersonalName } from "@/lib/display-name";

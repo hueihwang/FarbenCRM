@@ -7,8 +7,9 @@ import {
   saveMessage,
   getConversation,
   toolHandlers,
-  callOpenRouter,
+  callAnthropic,
 } from "@/services/ai-chat";
+import type { AnthropicMessage, AnthropicContentBlock } from "@/services/ai-chat";
 import { db } from "@/db";
 import { messages, conversations } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -64,11 +65,8 @@ export async function POST(req: NextRequest) {
   let resultStr: string;
 
   if (approved) {
-    // Execute the tool
     let parsedArgs: Record<string, unknown> = {};
-    try {
-      parsedArgs = JSON.parse(pending.arguments);
-    } catch {}
+    try { parsedArgs = JSON.parse(pending.arguments); } catch {}
 
     try {
       const result = await handler.execute(parsedArgs, toolCtx);
@@ -102,19 +100,15 @@ export async function POST(req: NextRequest) {
     .set({ updatedAt: new Date() })
     .where(eq(conversations.id, conversationId));
 
-  // Continue streaming with OpenRouter
+  // Continue streaming with Anthropic
   const systemPrompt = await buildSystemPrompt(ctx.workspaceId);
-  const historyMessages = await buildConversationMessages(conversationId);
-  const openRouterMessages = [
-    { role: "system" as const, content: systemPrompt },
-    ...historyMessages,
-  ];
+  const anthropicMessages = await buildConversationMessages(conversationId);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        await streamContinuation(config, openRouterMessages, conversationId, toolCtx, controller, encoder);
+        await streamContinuation(config, systemPrompt, anthropicMessages, conversationId, toolCtx, controller, encoder);
       } catch (e) {
         const errorMsg = e instanceof Error ? e.message : "Stream error";
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: errorMsg })}\n\n`));
@@ -136,7 +130,8 @@ export async function POST(req: NextRequest) {
 
 async function streamContinuation(
   config: { apiKey: string; model: string },
-  openRouterMessages: Array<{ role: string; content?: string | null; tool_calls?: unknown[]; tool_call_id?: string; name?: string }>,
+  systemPrompt: string,
+  anthropicMessages: AnthropicMessage[],
   conversationId: string,
   toolCtx: { workspaceId: string; userId: string },
   controller: ReadableStreamDefaultController,
@@ -148,9 +143,9 @@ async function streamContinuation(
     return;
   }
 
-  const res = await callOpenRouter(config, openRouterMessages as Parameters<typeof callOpenRouter>[1], true);
+  const res = await callAnthropic(config, systemPrompt, anthropicMessages, true);
   if (!res.ok) {
-    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: `OpenRouter error: ${res.status}` })}\n\n`));
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: `Anthropic error: ${res.status}` })}\n\n`));
     return;
   }
 
@@ -158,8 +153,8 @@ async function streamContinuation(
   const decoder = new TextDecoder();
   let buffer = "";
   let fullContent = "";
-  let toolCalls: Array<{ id: string; type: string; function: { name: string; arguments: string } }> = [];
-  let currentToolCallIndex = -1;
+  const toolUseBlocks: Array<{ id: string; name: string; inputJson: string }> = [];
+  let currentBlockType = "";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -169,49 +164,71 @@ async function streamContinuation(
     const lines = buffer.split("\n");
     buffer = lines.pop() || "";
 
+    let eventType = "";
+
     for (const line of lines) {
+      if (line.startsWith("event: ")) {
+        eventType = line.slice(7).trim();
+        continue;
+      }
       if (!line.startsWith("data: ")) continue;
       const data = line.slice(6).trim();
-      if (data === "[DONE]") continue;
+      if (!data || data === "[DONE]") continue;
 
       try {
         const parsed = JSON.parse(data);
-        const delta = parsed.choices?.[0]?.delta;
-        if (!delta) continue;
 
-        if (delta.content) {
-          fullContent += delta.content;
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: "token", content: delta.content })}\n\n`)
-          );
-        }
-
-        if (delta.tool_calls) {
-          for (const tc of delta.tool_calls) {
-            const idx = tc.index ?? 0;
-            if (idx > currentToolCallIndex) {
-              currentToolCallIndex = idx;
-              toolCalls.push({
-                id: tc.id || "",
-                type: "function",
-                function: { name: tc.function?.name || "", arguments: "" },
-              });
+        switch (eventType) {
+          case "content_block_start": {
+            const block = parsed.content_block;
+            if (block?.type === "text") {
+              currentBlockType = "text";
+            } else if (block?.type === "tool_use") {
+              currentBlockType = "tool_use";
+              toolUseBlocks.push({ id: block.id, name: block.name, inputJson: "" });
             }
-            const current = toolCalls[toolCalls.length - 1];
-            if (tc.id) current.id = tc.id;
-            if (tc.function?.name) current.function.name = tc.function.name;
-            if (tc.function?.arguments) current.function.arguments += tc.function.arguments;
+            break;
           }
+          case "content_block_delta": {
+            const delta = parsed.delta;
+            if (delta?.type === "text_delta" && delta.text) {
+              fullContent += delta.text;
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "token", content: delta.text })}\n\n`));
+            } else if (delta?.type === "input_json_delta" && delta.partial_json) {
+              const current = toolUseBlocks[toolUseBlocks.length - 1];
+              if (current) current.inputJson += delta.partial_json;
+            }
+            break;
+          }
+          case "content_block_stop":
+            currentBlockType = "";
+            break;
         }
       } catch {}
     }
   }
+
+  const toolCalls = toolUseBlocks.map((tb) => ({
+    id: tb.id,
+    type: "function" as const,
+    function: { name: tb.name, arguments: tb.inputJson },
+  }));
 
   if (toolCalls.length > 0) {
     const assistantMsg = await saveMessage(conversationId, "assistant", {
       content: fullContent || null,
       toolCalls: toolCalls,
     });
+
+    // Build assistant content for next request
+    const assistantContent: AnthropicContentBlock[] = [];
+    if (fullContent) assistantContent.push({ type: "text", text: fullContent });
+    for (const tb of toolUseBlocks) {
+      let input: Record<string, unknown> = {};
+      try { input = JSON.parse(tb.inputJson); } catch {}
+      assistantContent.push({ type: "tool_use", id: tb.id, name: tb.name, input });
+    }
+    anthropicMessages.push({ role: "assistant", content: assistantContent });
 
     for (const tc of toolCalls) {
       const handler = toolHandlers[tc.function.name];
@@ -224,21 +241,15 @@ async function streamContinuation(
         await db.update(messages).set({
           metadata: {
             pendingToolCalls: toolCalls.map((t) => ({
-              id: t.id,
-              name: t.function.name,
-              arguments: t.function.arguments,
-              status: "pending",
+              id: t.id, name: t.function.name, arguments: t.function.arguments, status: "pending",
             })),
           },
         }).where(eq(messages.id, assistantMsg.id));
 
         controller.enqueue(encoder.encode(
           `data: ${JSON.stringify({
-            type: "tool_call_pending",
-            messageId: assistantMsg.id,
-            toolCallId: tc.id,
-            name: tc.function.name,
-            arguments: parsedArgs,
+            type: "tool_call_pending", messageId: assistantMsg.id, toolCallId: tc.id,
+            name: tc.function.name, arguments: parsedArgs,
           })}\n\n`
         ));
         return;
@@ -255,19 +266,31 @@ async function streamContinuation(
         const result = await handler.execute(parsedArgs, toolCtx);
         const resultStr = JSON.stringify(result);
         await saveMessage(conversationId, "tool", { content: resultStr, toolCallId: tc.id, toolName: tc.function.name });
-        openRouterMessages.push({ role: "assistant", content: fullContent || null, tool_calls: toolCalls as unknown[] });
-        openRouterMessages.push({ role: "tool", content: resultStr, tool_call_id: tc.id, name: tc.function.name });
+
+        const toolResult: AnthropicContentBlock = { type: "tool_result", tool_use_id: tc.id, content: resultStr };
+        const lastMsg = anthropicMessages[anthropicMessages.length - 1];
+        if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
+          (lastMsg.content as AnthropicContentBlock[]).push(toolResult);
+        } else {
+          anthropicMessages.push({ role: "user", content: [toolResult] });
+        }
       } catch (e) {
         const errStr = JSON.stringify({ error: e instanceof Error ? e.message : "Failed" });
         await saveMessage(conversationId, "tool", { content: errStr, toolCallId: tc.id, toolName: tc.function.name });
-        openRouterMessages.push({ role: "assistant", content: fullContent || null, tool_calls: toolCalls as unknown[] });
-        openRouterMessages.push({ role: "tool", content: errStr, tool_call_id: tc.id, name: tc.function.name });
+
+        const toolResult: AnthropicContentBlock = { type: "tool_result", tool_use_id: tc.id, content: errStr, is_error: true };
+        const lastMsg = anthropicMessages[anthropicMessages.length - 1];
+        if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
+          (lastMsg.content as AnthropicContentBlock[]).push(toolResult);
+        } else {
+          anthropicMessages.push({ role: "user", content: [toolResult] });
+        }
       }
     }
 
     const hasPending = toolCalls.some((tc) => toolHandlers[tc.function.name]?.requiresConfirmation);
     if (!hasPending) {
-      await streamContinuation(config, openRouterMessages, conversationId, toolCtx, controller, encoder, depth + 1);
+      await streamContinuation(config, systemPrompt, anthropicMessages, conversationId, toolCtx, controller, encoder, depth + 1);
     }
   } else if (fullContent) {
     const msg = await saveMessage(conversationId, "assistant", { content: fullContent });

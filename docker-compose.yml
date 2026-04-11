@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: openclaw
+      POSTGRES_DB: farbencrm
     ports:
       - "5432:5432"
     volumes:
@@ -24,7 +24,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/openclaw
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/farbencrm
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me-to-a-random-secret-at-least-32-chars}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}

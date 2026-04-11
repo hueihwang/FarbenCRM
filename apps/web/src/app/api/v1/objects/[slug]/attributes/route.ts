@@ -13,7 +13,7 @@ import {
   updateStatus,
   deleteStatus,
 } from "@/services/attributes";
-import { ATTRIBUTE_TYPES } from "@openclaw-crm/shared";
+import { ATTRIBUTE_TYPES } from "@farbencrm/shared";
 
 export async function GET(
   req: NextRequest,

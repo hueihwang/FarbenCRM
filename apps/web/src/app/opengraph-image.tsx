@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "OpenClaw CRM - The CRM your AI agent already knows how to use";
+export const alt = "FarbenCRM - The CRM your AI agent already knows how to use";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -27,7 +27,7 @@ export default function OGImage() {
             width: 500,
             height: 500,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(34, 197, 94, 0.25) 0%, transparent 70%)",
             top: "10%",
             left: "35%",
           }}
@@ -43,13 +43,13 @@ export default function OGImage() {
           }}
         >
           <span style={{ fontSize: 72, fontWeight: 700, color: "#f0f0f5" }}>
-            openclaw
+            Farben
           </span>
           <span
             style={{
               fontSize: 72,
               fontWeight: 700,
-              background: "linear-gradient(135deg, #818cf8, #6366f1, #4f46e5)",
+              background: "linear-gradient(135deg, #4ade80, #22c55e, #16a34a)",
               backgroundClip: "text",
               color: "transparent",
             }}

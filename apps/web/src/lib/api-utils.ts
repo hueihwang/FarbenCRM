@@ -26,7 +26,7 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
   const authHeader = req.headers.get("authorization");
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
-    if (token.startsWith("oc_sk_")) {
+    if (token.startsWith("fc_sk_") || token.startsWith("oc_sk_")) {
       return getApiKeyAuthContext(token);
     }
   }

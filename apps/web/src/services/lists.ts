@@ -8,7 +8,7 @@ import {
   records,
 } from "@/db/schema";
 import { eq, and, inArray, desc, sql } from "drizzle-orm";
-import { ATTRIBUTE_TYPE_COLUMN_MAP, type AttributeType } from "@openclaw-crm/shared";
+import { ATTRIBUTE_TYPE_COLUMN_MAP, type AttributeType } from "@farbencrm/shared";
 import { batchGetRecordDisplayNames } from "./display-names";
 
 // ─── Types ───────────────────────────────────────────────────────────

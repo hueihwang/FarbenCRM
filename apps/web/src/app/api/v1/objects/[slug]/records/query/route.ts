@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getAuthContext, unauthorized, notFound, badRequest, success } from "@/lib/api-utils";
 import { getObjectBySlug } from "@/services/objects";
 import { listRecords, assertRecord } from "@/services/records";
-import type { FilterGroup, SortConfig } from "@openclaw-crm/shared";
+import type { FilterGroup, SortConfig } from "@farbencrm/shared";
 
 /** POST /api/v1/objects/[slug]/records/query
  *  Body: { limit?, offset?, filter?, sorts? }

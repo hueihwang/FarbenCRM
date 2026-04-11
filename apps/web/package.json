@@ -1,5 +1,5 @@
 {
-  "name": "@openclaw-crm/web",
+  "name": "@farbencrm/web",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -20,7 +20,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@neondatabase/serverless": "^0.10.0",
-    "@openclaw-crm/shared": "workspace:*",
+    "@farbencrm/shared": "workspace:*",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-checkbox": "^1.1.0",
     "@radix-ui/react-dialog": "^1.1.0",

@@ -7,20 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 const MODELS = [
-  { value: "anthropic/claude-sonnet-4", label: "Claude Sonnet 4" },
-  { value: "anthropic/claude-opus-4", label: "Claude Opus 4" },
-  { value: "openai/gpt-4o", label: "GPT-4o" },
-  { value: "openai/gpt-4o-mini", label: "GPT-4o Mini" },
-  { value: "meta-llama/llama-3.1-405b-instruct", label: "Llama 3.1 405B" },
-  { value: "meta-llama/llama-3.1-70b-instruct", label: "Llama 3.1 70B" },
-  { value: "google/gemini-2.0-flash-001", label: "Gemini 2.0 Flash" },
+  { value: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
+  { value: "claude-opus-4-20250514", label: "Claude Opus 4" },
+  { value: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
 ];
 
 export default function AISettingsPage() {
   const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("anthropic/claude-sonnet-4");
+  const [tavilyKey, setTavilyKey] = useState("");
+  const [model, setModel] = useState("claude-sonnet-4-20250514");
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [hasTavilyKey, setHasTavilyKey] = useState(false);
   const [showKey, setShowKey] = useState(false);
+  const [showTavilyKey, setShowTavilyKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
@@ -33,6 +32,7 @@ export default function AISettingsPage() {
         if (data.data) {
           setModel(data.data.model);
           setHasApiKey(data.data.hasApiKey);
+          setHasTavilyKey(data.data.hasTavilyKey);
         }
       })
       .catch(() => {});
@@ -43,6 +43,7 @@ export default function AISettingsPage() {
     try {
       const body: Record<string, string> = { model };
       if (apiKey) body.apiKey = apiKey;
+      if (tavilyKey) body.tavilyApiKey = tavilyKey;
 
       const res = await fetch("/api/v1/ai-settings", {
         method: "PATCH",
@@ -53,7 +54,9 @@ export default function AISettingsPage() {
       if (res.ok) {
         const data = await res.json();
         setHasApiKey(data.data.hasApiKey);
+        setHasTavilyKey(data.data.hasTavilyKey);
         setApiKey("");
+        setTavilyKey("");
       }
     } finally {
       setSaving(false);
@@ -92,18 +95,18 @@ export default function AISettingsPage() {
       <div>
         <h1 className="text-2xl font-bold">AI Agent</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Configure the AI assistant that can answer questions about your CRM data and take actions on your behalf.
+          Configure the AI assistant that can answer questions about your CRM data, search the web, and take actions on your behalf.
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="apiKey">OpenRouter API Key</Label>
+          <Label htmlFor="apiKey">Anthropic API Key</Label>
           <div className="relative">
             <Input
               id="apiKey"
               type={showKey ? "text" : "password"}
-              placeholder={hasApiKey ? "••••••••••••••••" : "sk-or-v1-..."}
+              placeholder={hasApiKey ? "••••••••••••••••" : "sk-ant-api03-..."}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               className="pr-10"
@@ -122,12 +125,12 @@ export default function AISettingsPage() {
           <p className="text-xs text-muted-foreground">
             Get your API key from{" "}
             <a
-              href="https://openrouter.ai/keys"
+              href="https://console.anthropic.com/settings/keys"
               target="_blank"
               rel="noopener noreferrer"
               className="underline"
             >
-              openrouter.ai/keys
+              console.anthropic.com
             </a>
           </p>
         </div>
@@ -146,6 +149,42 @@ export default function AISettingsPage() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="tavilyKey">Tavily API Key <span className="text-muted-foreground font-normal">(web search)</span></Label>
+          <div className="relative">
+            <Input
+              id="tavilyKey"
+              type={showTavilyKey ? "text" : "password"}
+              placeholder={hasTavilyKey ? "••••••••••••••••" : "tvly-..."}
+              value={tavilyKey}
+              onChange={(e) => setTavilyKey(e.target.value)}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowTavilyKey(!showTavilyKey)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {showTavilyKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {hasTavilyKey && !tavilyKey && (
+            <p className="text-xs text-muted-foreground">Tavily key is set. Enter a new key to replace it.</p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Optional. Enables the AI to search the web for company info, news, and prospect research.{" "}
+            <a
+              href="https://app.tavily.com/home"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              Get a free key at tavily.com
+            </a>{" "}
+            (1,000 searches/month free).
+          </p>
         </div>
 
         <div className="flex items-center gap-3 pt-2">

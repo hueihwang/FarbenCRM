@@ -21,8 +21,9 @@ interface AIConfig {
 }
 
 interface WorkspaceSettings {
-  openrouterApiKey?: string;
-  openrouterModel?: string;
+  anthropicApiKey?: string;
+  anthropicModel?: string;
+  tavilyApiKey?: string;
 }
 
 export interface ToolHandler {
@@ -35,12 +36,20 @@ interface ToolContext {
   userId: string;
 }
 
-interface OpenRouterMessage {
-  role: "user" | "assistant" | "system" | "tool";
-  content?: string | null;
-  tool_calls?: ToolCall[];
-  tool_call_id?: string;
+export interface AnthropicMessage {
+  role: "user" | "assistant";
+  content: string | AnthropicContentBlock[];
+}
+
+export interface AnthropicContentBlock {
+  type: "text" | "tool_use" | "tool_result";
+  text?: string;
+  id?: string;
   name?: string;
+  input?: Record<string, unknown>;
+  tool_use_id?: string;
+  content?: string;
+  is_error?: boolean;
 }
 
 interface ToolCall {
@@ -64,12 +73,12 @@ export async function getAIConfig(workspaceId: string): Promise<AIConfig | null>
   const settings = (workspace?.settings ?? {}) as WorkspaceSettings;
 
   // Workspace setting > env var
-  const apiKey = settings.openrouterApiKey || process.env.OPENROUTER_API_KEY;
+  const apiKey = settings.anthropicApiKey || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
 
   return {
     apiKey,
-    model: settings.openrouterModel || process.env.OPENROUTER_MODEL || "anthropic/claude-sonnet-4",
+    model: settings.anthropicModel || process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514",
   };
 }
 
@@ -95,7 +104,7 @@ export async function buildSystemPrompt(workspaceId: string): Promise<string> {
     })
   );
 
-  return `You are an AI assistant for OpenClaw CRM. You help users manage their CRM data — searching records, creating and updating contacts, companies, deals, tasks, and notes.
+  return `You are an AI assistant for FarbenCRM. You help users manage their CRM data — searching records, creating and updating contacts, companies, deals, tasks, and notes.
 
 Available object types and their attributes:
 ${objectDetails.join("\n")}
@@ -110,6 +119,7 @@ Guidelines:
 - For status attributes (like deal stage), use the exact status title values listed above.
 - When creating tasks, always provide a clear content description.
 - When creating notes, you need a recordId — search for the record first if needed.
+- Use web_search to look up company info, industry news, prospect research, or any external information.
 - Be concise and helpful. Confirm actions before executing writes.
 - If a tool call fails, explain the error to the user and suggest alternatives.`;
 }
@@ -311,6 +321,21 @@ export const toolDefinitions = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "web_search",
+      description: "Search the web for information about companies, people, industries, news, or any external topic. Useful for researching prospects, verifying company details, finding contact info, or getting market insights.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Search query" },
+          max_results: { type: "number", description: "Max results to return (default 5, max 10)" },
+        },
+        required: ["query"],
+      },
+    },
+  },
 ];
 
 // ─── Tool Handlers ───────────────────────────────────────────────────
@@ -318,6 +343,16 @@ export const toolDefinitions = [
 async function resolveObjectId(slug: string, workspaceId: string): Promise<string | null> {
   const obj = await getObjectBySlug(workspaceId, slug);
   return obj?.id ?? null;
+}
+
+async function getTavilyApiKey(workspaceId: string): Promise<string | null> {
+  const [workspace] = await db
+    .select({ settings: workspaces.settings })
+    .from(workspaces)
+    .where(eq(workspaces.id, workspaceId))
+    .limit(1);
+  const settings = (workspace?.settings ?? {}) as WorkspaceSettings;
+  return settings.tavilyApiKey || process.env.TAVILY_API_KEY || null;
 }
 
 export const toolHandlers: Record<string, ToolHandler> = {
@@ -466,29 +501,104 @@ export const toolHandlers: Record<string, ToolHandler> = {
       return note;
     },
   },
+
+  web_search: {
+    requiresConfirmation: false,
+    async execute(args, ctx) {
+      const tavilyKey = await getTavilyApiKey(ctx.workspaceId);
+      if (!tavilyKey) {
+        return { error: "Web search not configured. Set your Tavily API key in Settings > AI Agent." };
+      }
+
+      const maxResults = Math.min((args.max_results as number) || 5, 10);
+
+      const res = await fetch("https://api.tavily.com/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          api_key: tavilyKey,
+          query: args.query as string,
+          max_results: maxResults,
+          include_answer: true,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        return { error: `Search failed: ${res.status}` };
+      }
+
+      const data = await res.json();
+      return {
+        answer: data.answer || null,
+        results: (data.results || []).map((r: any) => ({
+          title: r.title,
+          url: r.url,
+          content: r.content,
+        })),
+      };
+    },
+  },
 };
 
 // ─── Message Helpers ─────────────────────────────────────────────────
 
-export async function buildConversationMessages(conversationId: string): Promise<OpenRouterMessage[]> {
+export async function buildConversationMessages(conversationId: string): Promise<AnthropicMessage[]> {
   const rows = await db
     .select()
     .from(messages)
     .where(eq(messages.conversationId, conversationId))
     .orderBy(asc(messages.createdAt));
 
-  return rows.map((msg) => {
-    const base: OpenRouterMessage = {
-      role: msg.role as OpenRouterMessage["role"],
-    };
+  // Convert DB messages to Anthropic format
+  // Anthropic has only "user" and "assistant" roles.
+  // Tool results are sent as user messages with tool_result content blocks.
+  // Tool calls are part of assistant messages as tool_use content blocks.
+  const result: AnthropicMessage[] = [];
 
-    if (msg.content) base.content = msg.content;
-    if (msg.toolCalls) base.tool_calls = msg.toolCalls as ToolCall[];
-    if (msg.toolCallId) base.tool_call_id = msg.toolCallId;
-    if (msg.toolName) base.name = msg.toolName;
+  for (const msg of rows) {
+    if (msg.role === "user") {
+      result.push({ role: "user", content: msg.content || "" });
+    } else if (msg.role === "assistant") {
+      const content: AnthropicContentBlock[] = [];
+      if (msg.content) {
+        content.push({ type: "text", text: msg.content });
+      }
+      // Convert stored tool_calls (OpenAI format) to Anthropic tool_use blocks
+      if (msg.toolCalls) {
+        const calls = msg.toolCalls as ToolCall[];
+        for (const tc of calls) {
+          let input: Record<string, unknown> = {};
+          try { input = JSON.parse(tc.function.arguments); } catch {}
+          content.push({
+            type: "tool_use",
+            id: tc.id,
+            name: tc.function.name,
+            input,
+          });
+        }
+      }
+      if (content.length > 0) {
+        result.push({ role: "assistant", content });
+      }
+    } else if (msg.role === "tool") {
+      // Tool results become user messages with tool_result content blocks
+      // Merge consecutive tool results into a single user message
+      const toolResult: AnthropicContentBlock = {
+        type: "tool_result",
+        tool_use_id: msg.toolCallId || "",
+        content: msg.content || "",
+      };
+      const last = result[result.length - 1];
+      if (last?.role === "user" && Array.isArray(last.content)) {
+        (last.content as AnthropicContentBlock[]).push(toolResult);
+      } else {
+        result.push({ role: "user", content: [toolResult] });
+      }
+    }
+  }
 
-    return base;
-  });
+  return result;
 }
 
 export async function saveMessage(
@@ -520,29 +630,29 @@ export async function saveMessage(
 
 export async function generateTitle(apiKey: string, model: string, userMessage: string): Promise<string> {
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": process.env.BETTER_AUTH_URL || "http://localhost:3001",
+        "x-api-key": apiKey,
+        "content-type": "application/json",
+        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
         model,
+        max_tokens: 30,
         messages: [
           {
             role: "user",
             content: `Generate a very short title (max 6 words) for a CRM conversation that starts with this message. Return only the title, no quotes or punctuation:\n\n${userMessage}`,
           },
         ],
-        max_tokens: 20,
       }),
     });
 
     if (!res.ok) return "New conversation";
 
     const data = await res.json();
-    const title = data.choices?.[0]?.message?.content?.trim();
+    const title = data.content?.[0]?.text?.trim();
     return title || "New conversation";
   } catch {
     return "New conversation";
@@ -625,24 +735,36 @@ export async function getConversationMessages(conversationId: string) {
     .orderBy(asc(messages.createdAt));
 }
 
-// ─── OpenRouter Streaming ────────────────────────────────────────────
+// ─── Anthropic Streaming ─────────────────────────────────────────────
 
-export async function callOpenRouter(
+/** Convert tool definitions from OpenAI format to Anthropic format */
+function toAnthropicTools() {
+  return toolDefinitions.map((t) => ({
+    name: t.function.name,
+    description: t.function.description,
+    input_schema: t.function.parameters,
+  }));
+}
+
+export async function callAnthropic(
   config: AIConfig,
-  messages: OpenRouterMessage[],
+  systemPrompt: string,
+  messages: AnthropicMessage[],
   stream = true
 ) {
-  return fetch("https://openrouter.ai/api/v1/chat/completions", {
+  return fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${config.apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": process.env.BETTER_AUTH_URL || "http://localhost:3001",
+      "x-api-key": config.apiKey,
+      "content-type": "application/json",
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
       model: config.model,
+      max_tokens: 4096,
+      system: systemPrompt,
       messages,
-      tools: toolDefinitions,
+      tools: toAnthropicTools(),
       stream,
     }),
   });

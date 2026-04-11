@@ -1,14 +1,14 @@
 {
-  "name": "openclaw-crm",
+  "name": "farbencrm",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "db:generate": "turbo run db:generate --filter=@openclaw-crm/web",
-    "db:migrate": "turbo run db:migrate --filter=@openclaw-crm/web",
-    "db:push": "turbo run db:push --filter=@openclaw-crm/web",
-    "db:seed": "turbo run db:seed --filter=@openclaw-crm/web"
+    "db:generate": "turbo run db:generate --filter=@farbencrm/web",
+    "db:migrate": "turbo run db:migrate --filter=@farbencrm/web",
+    "db:push": "turbo run db:push --filter=@farbencrm/web",
+    "db:seed": "turbo run db:seed --filter=@farbencrm/web"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

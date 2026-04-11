@@ -19,15 +19,15 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules 2>/dev/null || true
+COPY --from=deps /app/packages/shared ./packages/shared
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_OUTPUT=standalone
 
 # Build shared package first, then web app
-RUN pnpm --filter @openclaw-crm/shared build && \
-    pnpm --filter @openclaw-crm/web build
+RUN pnpm --filter @farbencrm/shared build && \
+    pnpm --filter @farbencrm/web build
 
 # ─── Stage 3: Production runner ──────────────────────────────────────
 FROM node:20-alpine AS runner
@@ -50,7 +50,7 @@ COPY --from=builder /app/apps/web/src/db ./apps/web/src/db
 COPY --from=builder /app/packages/shared ./packages/shared
 
 # Copy marketing content for runtime access (sitemap, dynamic pages)
-COPY --from=builder /app/marketing/content ./marketing/content
+COPY --from=builder /app/apps/web/content ./apps/web/content
 
 USER nextjs
 

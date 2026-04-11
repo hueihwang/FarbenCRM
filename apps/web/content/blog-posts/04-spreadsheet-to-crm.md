@@ -3,9 +3,9 @@ title: "From Spreadsheet to CRM: Why Your AI Agent Needs Structured Data"
 slug: "spreadsheet-to-crm"
 description: "Your AI agent can't query a spreadsheet. Learn why migrating to a CRM with a real API is the key to agent-driven workflows, plus a step-by-step migration guide."
 date: "2026-02-17"
-author: "OpenClaw Team"
+author: "FarbenCRM Team"
 category: "guides"
-keywords: ["spreadsheet to CRM", "Excel to CRM", "CRM migration", "CSV import", "AI agent CRM", "spreadsheet to CRM agent", "OpenClaw Bot"]
+keywords: ["spreadsheet to CRM", "Excel to CRM", "CRM migration", "CSV import", "AI agent CRM", "spreadsheet to CRM agent", "AI agent"]
 ---
 
 # From Spreadsheet to CRM: Why Your AI Agent Needs Structured Data
@@ -16,15 +16,15 @@ If you're managing customer data in a spreadsheet, you're not alone. According t
 
 Spreadsheets work until they don't. They break when multiple people edit at the same time, when you need relationships between data, when your sheet has 2,000+ rows and takes five seconds to load.
 
-But there's a newer, bigger reason to move: **your OpenClaw Bot can't work with a spreadsheet.**
+But there's a newer, bigger reason to move: **your AI agent can't work with a spreadsheet.**
 
-If you're running an OpenClaw Bot (or any AI agent), that agent needs structured, queryable data to be useful. A spreadsheet sitting in Google Drive doesn't give it that. A CRM with a real API does.
+If you're running an AI agent (or any AI agent), that agent needs structured, queryable data to be useful. A spreadsheet sitting in Google Drive doesn't give it that. A CRM with a real API does.
 
 This guide covers why agent integration is the real reason to migrate, then walks you through the migration step by step.
 
 ## Your Agent Can't Work with a Spreadsheet
 
-This is the part most migration guides skip. They focus on collaboration, relationships, task management. Those matter. But in 2026, the strongest reason to move your data out of a spreadsheet is this: **your OpenClaw Bot has no way to use it.**
+This is the part most migration guides skip. They focus on collaboration, relationships, task management. Those matter. But in 2026, the strongest reason to move your data out of a spreadsheet is this: **your AI agent has no way to use it.**
 
 Here's what a spreadsheet gives your agent:
 
@@ -34,7 +34,7 @@ Here's what a spreadsheet gives your agent:
 - **No type safety.** A spreadsheet column called "Amount" might contain "$50,000", "50k", "fifty thousand", or nothing. A CRM enforces types: currency fields store numbers, date fields store dates. Your agent gets clean data every time.
 - **No write-back.** Even if your agent could read a spreadsheet, writing back to it reliably (without overwriting someone else's changes) is a nightmare. CRM APIs handle concurrent writes by design.
 
-When you move your data to a CRM like OpenClaw, your OpenClaw Bot gets access through a skill file. Generate the file, drop it into your agent config, and your agent can create contacts, update deals, log notes, search records, and more. That takes about 2 minutes (here's the [step-by-step guide](/blog/connect-openclaw-bot-to-crm)). Try doing that with a Google Sheet.
+When you move your data to a CRM like FarbenCRM, your AI agent gets access through a skill file. Generate the file, drop it into your agent config, and your agent can create contacts, update deals, log notes, search records, and more. That takes about 2 minutes (here's the [step-by-step guide](/blog/connect-ai-agent-to-crm)). Try doing that with a Google Sheet.
 
 ### What Your Agent Can Do with CRM Data
 
@@ -91,7 +91,7 @@ Beyond the usual spreadsheet problems (duplicates, no relationships, inconsisten
 - There's no API endpoint to ask "show me all deals closing this quarter"
 - Your agent can't create a follow-up task when a deal moves to negotiation
 
-In a CRM, every one of these becomes a structured, queryable operation your OpenClaw Bot can execute.
+In a CRM, every one of these becomes a structured, queryable operation your AI agent can execute.
 
 ## Step 2: Clean Your Data
 
@@ -121,7 +121,7 @@ Check for duplicate contacts (same email), duplicate companies (same domain), an
 - Good: `50000` (CRM will format it)
 - Bad: `$50,000.00` (text, not number)
 
-This matters even more for agent workflows. Your OpenClaw Bot expects typed data. If a currency field contains the string "$50k", the agent can't do math on it. Clean data in means useful data out.
+This matters even more for agent workflows. Your AI agent expects typed data. If a currency field contains the string "$50k", the agent can't do math on it. Clean data in means useful data out.
 
 ### 3. Fill Missing Values
 
@@ -152,7 +152,7 @@ This step is particularly important for agent integration. When your CRM has pro
 
 Every CRM has different field types. Map your columns to the right types.
 
-### Example: OpenClaw Attribute Types
+### Example: FarbenCRM Attribute Types
 
 | Spreadsheet Column | CRM Attribute Type | Example |
 |--------------------|-------------------|---------|
@@ -167,7 +167,7 @@ Every CRM has different field types. Map your columns to the right types.
 | Industry | `select` (dropdown) | Technology, Finance, Healthcare |
 | Website | `domain` | acme.com |
 
-OpenClaw supports 17 attribute types. Each type maps to a specific storage column in the database, which means your agent's queries are type-safe. When your OpenClaw Bot asks for "deals over $50,000", the CRM returns actual numeric comparisons, not string matching.
+FarbenCRM supports 17 attribute types. Each type maps to a specific storage column in the database, which means your agent's queries are type-safe. When your AI agent asks for "deals over $50,000", the CRM returns actual numeric comparisons, not string matching.
 
 ### Mapping Worksheet
 
@@ -184,7 +184,7 @@ Create a mapping document before importing:
 
 ## Step 4: Import Data to Your CRM
 
-Let's walk through importing to OpenClaw (similar for other CRMs).
+Let's walk through importing to FarbenCRM (similar for other CRMs).
 
 ### 1. Export Spreadsheet to CSV
 
@@ -200,7 +200,7 @@ Save one CSV per sheet:
 
 Why? Contacts and Deals reference Companies. Import parent objects before children.
 
-**OpenClaw steps:**
+**FarbenCRM steps:**
 1. Navigate to **Companies** object
 2. Click **Import CSV**
 3. Upload `companies.csv`
@@ -221,7 +221,7 @@ Why? Contacts and Deals reference Companies. Import parent objects before childr
    - "Email" to "email" (email_address)
    - "Phone" to "phone" (phone_number)
    - "Company" to "company" (record_reference)
-5. For the "Company" reference, OpenClaw searches for a matching company by name. If "Acme Corp" exists in Companies, it links automatically.
+5. For the "Company" reference, FarbenCRM searches for a matching company by name. If "Acme Corp" exists in Companies, it links automatically.
 6. Preview and import
 
 ### 4. Import Deals (Link to Companies and Contacts)
@@ -250,18 +250,18 @@ Review error logs and fix issues before moving on.
 
 ## Step 5: Connect Your Agent
 
-This is the step that changes everything. With your data in a CRM, you can now connect your OpenClaw Bot.
+This is the step that changes everything. With your data in a CRM, you can now connect your AI agent.
 
 ### Setup (About 2 Minutes)
 
-1. In OpenClaw, go to **Settings > OpenClaw Bot**
+1. In FarbenCRM, go to **Settings > FarbenCRM**
 2. Click **Generate Skill File**
-3. Copy the generated file into your OpenClaw Bot's skill directory
+3. Copy the generated file into your AI agent's skill directory
 4. Your agent now has access to 19 API endpoint categories
 
 ### What Happens Next
 
-Your OpenClaw Bot can immediately:
+Your AI agent can immediately:
 - Search your contacts and companies by any attribute
 - Create new records from conversations ("Add Sarah from TechCo as a new lead")
 - Update deal stages ("Move the Acme deal to Won")
@@ -274,11 +274,11 @@ This is what a spreadsheet could never give you. Your agent has full read/write 
 
 **Old spreadsheet routine:** Every Monday, filter for "Last Contact > 30 days", manually create follow-up tasks, update dates after each call.
 
-**New agent workflow:** Tell your OpenClaw Bot: "Find everyone I haven't contacted in 30 days and create follow-up tasks." Done. The agent queries the API, creates the tasks, and you can review them in the CRM.
+**New agent workflow:** Tell your AI agent: "Find everyone I haven't contacted in 30 days and create follow-up tasks." Done. The agent queries the API, creates the tasks, and you can review them in the CRM.
 
 **Old spreadsheet routine:** Scroll through deals, mentally calculate pipeline value, flag anything that's been sitting in "Proposal" for too long.
 
-**New agent workflow:** Ask your OpenClaw Bot: "What's my total pipeline value? Flag any deals that have been in Proposal stage for more than 2 weeks." The agent pulls the numbers and gives you a summary, no scrolling required.
+**New agent workflow:** Ask your AI agent: "What's my total pipeline value? Flag any deals that have been in Proposal stage for more than 2 weeks." The agent pulls the numbers and gives you a summary, no scrolling required.
 
 ## Common Migration Mistakes
 
@@ -298,7 +298,7 @@ Review error logs. Fix errors before moving on.
 Start with standard fields. Add custom fields later, once you understand what you actually need. This applies to agent workflows too: get the basic data in first, then build more advanced automations.
 
 ### Skipping the Agent Connection
-You migrated to a CRM. Don't stop there. Connect your OpenClaw Bot and start using agent-driven workflows. That's the whole point.
+You migrated to a CRM. Don't stop there. Connect your AI agent and start using agent-driven workflows. That's the whole point.
 
 ## Alternative: Start Fresh
 
@@ -309,8 +309,8 @@ Sometimes, migrating old spreadsheet data isn't worth it. Consider starting fres
 - **Relationships are broken** (can't figure out which contact belongs to which company)
 
 **Start fresh approach:**
-1. Deploy OpenClaw CRM (Docker Compose, takes 5 minutes)
-2. Connect your OpenClaw Bot (generate skill file, 2 minutes)
+1. Deploy FarbenCRM (Docker Compose, takes 5 minutes)
+2. Connect your AI agent (generate skill file, 2 minutes)
 3. Import only *active* contacts and companies (last 6 months)
 4. Let your agent start working with the data immediately
 5. Archive old spreadsheet for reference
@@ -326,7 +326,7 @@ Once migrated, actually *use* the CRM. This sounds obvious, but many teams impor
 1. **Make it the source of truth.** Stop updating the spreadsheet. Archive it.
 2. **Train the team.** Schedule a 30-minute walkthrough.
 3. **Set expectations.** "All contact updates happen in the CRM, not Sheets."
-4. **Show the agent in action.** Once people see the OpenClaw Bot creating tasks and answering questions from CRM data, the value of keeping that data clean and current becomes obvious.
+4. **Show the agent in action.** Once people see the AI agent creating tasks and answering questions from CRM data, the value of keeping that data clean and current becomes obvious.
 
 ### What You Gain After Migration
 
@@ -334,7 +334,7 @@ Once migrated, actually *use* the CRM. This sounds obvious, but many teams impor
 - **Relationships work.** Contacts link to companies. Deals link to contacts.
 - **Tasks and reminders.** Built-in task management.
 - **Search that works.** Find "all companies in Austin" in 1 second.
-- **Agent integration.** Your OpenClaw Bot can query, create, update, and search your CRM data from wherever you already talk to it.
+- **Agent integration.** Your AI agent can query, create, update, and search your CRM data from wherever you already talk to it.
 
 That last point is the one that changes how you work. A spreadsheet is a static file. A CRM with agent integration is a live system your AI can operate on your behalf.
 
@@ -345,16 +345,16 @@ That last point is the one that changes how you work. A spreadsheet is a static 
 - **Medium team (200-1,000 contacts):** 4-8 hours
 - **Large team (1,000+ contacts):** 1-2 days
 
-Cleaning data takes longer than importing. Connecting your OpenClaw Bot takes about 2 minutes on top of that.
+Cleaning data takes longer than importing. Connecting your AI agent takes about 2 minutes on top of that.
 
 ### Can I import incrementally?
-Yes. Import Companies first, verify, then import Contacts. OpenClaw supports multiple imports and handles duplicates.
+Yes. Import Companies first, verify, then import Contacts. FarbenCRM supports multiple imports and handles duplicates.
 
 ### What if I mess up?
-OpenClaw supports bulk delete. You can delete all imported records via API:
+FarbenCRM supports bulk delete. You can delete all imported records via API:
 ```bash
 curl -X DELETE /api/v1/objects/people/records/bulk \
-  -H "Authorization: Bearer oc_sk_..." \
+  -H "Authorization: Bearer fc_sk_..." \
   -d '{"createdAfter":"2026-02-15T00:00:00Z"}'
 ```
 Then re-import.
@@ -362,22 +362,22 @@ Then re-import.
 ### Do I need to hire someone?
 No. If you can use Excel filters and formulas, you can migrate to a CRM. The import wizards are user-friendly.
 
-### Do I need an agent to use OpenClaw?
-No. OpenClaw works as a standalone CRM with a built-in AI assistant. You can manage contacts, deals, tasks, and notes without any agent integration. The OpenClaw Bot integration is an additional capability that makes the CRM more powerful if you're already using an agent, or plan to.
+### Do I need an agent to use FarbenCRM?
+No. FarbenCRM works as a standalone CRM with a built-in AI assistant. You can manage contacts, deals, tasks, and notes without any agent integration. The AI agent integration is an additional capability that makes the CRM more powerful if you're already using an agent, or plan to.
 
 ## Final Thoughts
 
 The old case for migrating from spreadsheet to CRM was about collaboration, relationships, and scale. Those reasons still hold.
 
-The new case is about your OpenClaw Bot. A spreadsheet is a dead end for agent workflows: no API, no structured queries, no relationships, no type safety. A CRM with a real API turns your customer data into something your agent can read, write, search, and act on.
+The new case is about your AI agent. A spreadsheet is a dead end for agent workflows: no API, no structured queries, no relationships, no type safety. A CRM with a real API turns your customer data into something your agent can read, write, search, and act on.
 
-Move to a CRM so your OpenClaw Bot can work with your data. That's the simplest way to put it.
+Move to a CRM so your AI agent can work with your data. That's the simplest way to put it.
 
-Start small. Import 10 contacts to test the workflow. Connect your OpenClaw Bot. See what it can do with structured data. Then bulk import the rest.
+Start small. Import 10 contacts to test the workflow. Connect your AI agent. See what it can do with structured data. Then bulk import the rest.
 
 **Ready to migrate?**
 
-- [Try OpenClaw CRM (Open-Source, Self-Hosted)](https://github.com/openclaw-crm/openclaw-crm)
+- [Try FarbenCRM (Open-Source, Self-Hosted)](https://github.com/your-org/farbencrm)
 - [HubSpot Free Tier](https://www.hubspot.com/products/crm)
 - [Attio (Free for 3 users)](https://attio.com/pricing)
 

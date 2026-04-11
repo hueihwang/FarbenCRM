@@ -2,7 +2,7 @@ import "dotenv/config";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
-import { STANDARD_OBJECTS, DEAL_STAGES } from "@openclaw-crm/shared";
+import { STANDARD_OBJECTS, DEAL_STAGES } from "@farbencrm/shared";
 
 async function seed() {
   const connectionString = process.env.DATABASE_URL;

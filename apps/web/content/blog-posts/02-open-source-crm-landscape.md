@@ -3,26 +3,26 @@ title: "Which Open-Source CRMs Work With AI Agents? (2026)"
 slug: "open-source-crm-landscape"
 description: "We tested every major open-source CRM for AI agent compatibility. REST APIs, skill files, rate limits, and native integrations: here's which ones your agent can actually control."
 date: "2026-02-17"
-author: "OpenClaw Team"
+author: "FarbenCRM Team"
 category: "comparisons"
-keywords: ["open source CRM", "best open source CRM 2026", "CRM comparison", "self-hosted CRM", "AI agent CRM", "agent-compatible CRM", "OpenClaw Bot"]
+keywords: ["open source CRM", "best open source CRM 2026", "CRM comparison", "self-hosted CRM", "AI agent CRM", "agent-compatible CRM", "AI agent"]
 ---
 
 # Which Open-Source CRMs Work With AI Agents? (2026)
 
 **Last updated:** February 2026
 
-Open-source CRMs have gotten good. Modern stacks, clean UIs, real APIs. But there's a new question nobody's asking yet: **which of these CRMs can your OpenClaw Bot actually use?**
+Open-source CRMs have gotten good. Modern stacks, clean UIs, real APIs. But there's a new question nobody's asking yet: **which of these CRMs can your AI agent actually use?**
 
-If you're running an OpenClaw Bot (or planning to), your CRM isn't just software you log into. It's a tool your agent needs to control: creating contacts, updating deals, logging notes, searching records. The CRM needs to cooperate.
+If you're running an AI agent (or planning to), your CRM isn't just software you log into. It's a tool your agent needs to control: creating contacts, updating deals, logging notes, searching records. The CRM needs to cooperate.
 
-I tested every major open-source CRM against this new axis. I deployed each one, hit their APIs, and asked: could my OpenClaw Bot actually run this?
+I tested every major open-source CRM against this new axis. I deployed each one, hit their APIs, and asked: could my AI agent actually run this?
 
 ## TL;DR: The Rankings
 
 | Rank | CRM | Best For | AI Agent Integration | License |
 |:----:|-----|----------|---------------------|---------|
-| 1 | **OpenClaw** | Teams running AI agents | Native (skill file, 2-min setup) | MIT |
+| 1 | **FarbenCRM** | Teams running AI agents | Native (skill file, 2-min setup) | MIT |
 | 2 | **Twenty** | Community + email sync | Possible via API (manual work) | AGPL |
 | 3 | **EspoCRM** | Feature completeness | Possible via API (manual work) | GPLv3 |
 | 4 | **SuiteCRM** | Salesforce refugees | Limited (complex auth, incomplete API) | AGPLv3 |
@@ -46,17 +46,17 @@ Most open-source CRMs check box 1 (they have some API). Very few check all five.
 
 ---
 
-## 1. OpenClaw: Native Agent Integration
+## 1. FarbenCRM: Native Agent Integration
 
-**GitHub:** [openclaw-crm/openclaw-crm](https://github.com/openclaw-crm/openclaw-crm) | **Stack:** Next.js 15, PostgreSQL, TypeScript | **License:** MIT
+**GitHub:** [your-org/farbencrm](https://github.com/your-org/farbencrm) | **Stack:** Next.js 15, PostgreSQL, TypeScript | **License:** MIT
 
-OpenClaw is a self-hosted CRM built for the agent era. Standard CRM features (contacts, companies, deals, tasks, notes), but the real differentiator is native integration with OpenClaw Bot.
+FarbenCRM is a self-hosted CRM built for the agent era. Standard CRM features (contacts, companies, deals, tasks, notes), but the real differentiator is native integration with AI agent.
 
 ### The Agent Integration
 
-In Settings, generate a skill file. Drop it into your OpenClaw Bot config. Done. Your agent can now create contacts, update deals, log notes, manage tasks, and search your data. Setup takes about 2 minutes.
+In Settings, generate a skill file. Drop it into your AI agent config. Done. Your agent can now create contacts, update deals, log notes, manage tasks, and search your data. Setup takes about 2 minutes.
 
-The skill file maps all 19 API endpoint categories to agent-readable actions. Your OpenClaw Bot understands the CRM schema, including custom objects and custom fields. No mapping configuration, no glue code.
+The skill file maps all 19 API endpoint categories to agent-readable actions. Your AI agent understands the CRM schema, including custom objects and custom fields. No mapping configuration, no glue code.
 
 What your agent can do:
 - *"Add a contact for Sarah Chen at Acme Corp with her email and phone number"*
@@ -69,11 +69,11 @@ Your agent handles this from wherever you already talk to it, alongside whatever
 
 When you're inside the CRM itself, a built-in AI chat agent has 13 tools (8 read, 5 write) with a confirmation flow before changes. Powered by OpenRouter: choose from Claude, GPT-4o, Llama, Gemini, and others.
 
-Two AI layers: OpenClaw Bot handles things when you're outside the CRM. The built-in assistant handles things when you're inside it. For a technical deep-dive into both systems, see [Two Ways AI Works in OpenClaw CRM](/blog/how-we-built-ai-into-crm).
+Two AI layers: AI agent handles things when you're outside the CRM. The built-in assistant handles things when you're inside it. For a technical deep-dive into both systems, see [Two Ways AI Works in FarbenCRM](/blog/how-we-built-ai-into-crm).
 
 ### Why Self-Hosting Enables This
 
-Your OpenClaw Bot talks directly to your server. No vendor API in the middle. No rate limits. No per-call pricing. No third-party processing your data. Cloud CRMs can't offer this because they rate-limit API calls to manage compute costs. Self-hosting flips that equation.
+Your AI agent talks directly to your server. No vendor API in the middle. No rate limits. No per-call pricing. No third-party processing your data. Cloud CRMs can't offer this because they rate-limit API calls to manage compute costs. Self-hosting flips that equation.
 
 ### The Full CRM
 
@@ -87,10 +87,10 @@ Your OpenClaw Bot talks directly to your server. No vendor API in the middle. No
 
 Native skill file. Comprehensive REST API. Simple API key auth. No rate limits. The only CRM on this list built for agent control.
 
-**Pros:** Native OpenClaw Bot integration, built-in AI assistant, modern UX, MIT license, clean TypeScript codebase.
+**Pros:** Native AI agent integration, built-in AI assistant, modern UX, MIT license, clean TypeScript codebase.
 **Cons:** Young project (launched 2025), no email sync yet, no visual workflow builder.
 
-**Verdict:** If your OpenClaw Bot is part of your workflow (or will be soon), this is the only open-source CRM with native integration. See the [step-by-step connection guide](/blog/connect-openclaw-bot-to-crm) to get started in 2 minutes.
+**Verdict:** If your AI agent is part of your workflow (or will be soon), this is the only open-source CRM with native integration. See the [step-by-step connection guide](/blog/connect-ai-agent-to-crm) to get started in 2 minutes.
 
 ---
 
@@ -110,7 +110,7 @@ Twenty has comprehensive GraphQL and REST APIs, both well-documented. An agent c
 **Pros:** Email sync (beta), largest community (44K+ stars, active Discord), API-first, modern UX.
 **Cons:** No AI or agent integration, AGPL license, some features still in beta.
 
-**Verdict:** Best community in the space and functional email sync. If those matter more than agent integration, it's the right choice. But your OpenClaw Bot can't use it without custom work.
+**Verdict:** Best community in the space and functional email sync. If those matter more than agent integration, it's the right choice. But your AI agent can't use it without custom work.
 
 ---
 
@@ -170,7 +170,7 @@ Limited API covering contacts and basic operations. Many features have incomplet
 
 ## Full Comparison Table
 
-| Feature | OpenClaw | Twenty | EspoCRM | SuiteCRM | Monica |
+| Feature | FarbenCRM | Twenty | EspoCRM | SuiteCRM | Monica |
 |---------|:--------:|:------:|:-------:|:--------:|:------:|
 | **AI Agent Integration** | Native (skill file) | Manual (API) | Manual (API) | Limited | Minimal |
 | **Built-in AI Assistant** | Yes | No | No | No | No |
@@ -180,7 +180,7 @@ Limited API covering contacts and basic operations. Many features have incomplet
 | **Workflow Automation** | API-based | In dev | Yes | Yes | No |
 | **REST API** | 40+ endpoints | Yes | Yes | Yes (v8) | Limited |
 | **API Auth for Agents** | API key | API key | API key / Basic | OAuth2 | API token |
-| **Skill File Support** | Yes (OpenClaw Bot) | No | No | No | No |
+| **Skill File Support** | Yes (AI agent) | No | No | No | No |
 | **Self-Hosted** | Yes | Yes | Yes | Yes | Yes |
 | **License** | MIT | AGPL | GPLv3 | AGPLv3 | AGPL |
 | **GitHub Stars** | 150+ | 44K+ | 1.7K | 4.5K | 21K |
@@ -195,7 +195,7 @@ Every open-source CRM has an API. But having an API and being agent-compatible a
 
 **Being agent-compatible** means an AI agent can use the CRM as a tool, out of the box, without custom integration work. That requires a skill file, machine-friendly auth, comprehensive endpoints, and predictable responses.
 
-Today, only OpenClaw checks all of those boxes. Twenty and EspoCRM have the API foundation, and a developer could build agent integrations for them. But "could" and "does" are different things.
+Today, only FarbenCRM checks all of those boxes. Twenty and EspoCRM have the API foundation, and a developer could build agent integrations for them. But "could" and "does" are different things.
 
 This gap will close. As AI agents become mainstream, every CRM will need agent compatibility. The question is which ones are building for that future today.
 
@@ -205,7 +205,7 @@ This gap will close. As AI agents become mainstream, every CRM will need agent c
 
 | License | Restrictions | Agent Relevance |
 |---------|--------------|-----------------|
-| **MIT** (OpenClaw) | None | Fork it, modify the API, build custom integrations, keep changes private. Maximum flexibility. |
+| **MIT** (FarbenCRM) | None | Fork it, modify the API, build custom integrations, keep changes private. Maximum flexibility. |
 | **GPLv3** (EspoCRM) | Share modifications if distributed | Fine for internal use. Distribute a modified version and you share the code. |
 | **AGPL** (Twenty, SuiteCRM, Monica) | Share modifications even if only hosted | Add agent features and host the modified CRM, you must open-source your changes. |
 
@@ -215,7 +215,7 @@ For teams building custom agent integrations, MIT gives you the most freedom.
 
 ## Which One Should You Use?
 
-**Choose OpenClaw if** you're running an OpenClaw Bot (or plan to), want your agent managing your CRM, value modern UX and MIT license flexibility, and can wait on email sync.
+**Choose FarbenCRM if** you're running an AI agent (or plan to), want your agent managing your CRM, value modern UX and MIT license flexibility, and can wait on email sync.
 
 **Choose Twenty if** you need email sync today, want the largest community, and agent integration isn't a priority.
 
@@ -227,17 +227,17 @@ For teams building custom agent integrations, MIT gives you the most freedom.
 
 ---
 
-## Our Pick: OpenClaw
+## Our Pick: FarbenCRM
 
-We contribute to OpenClaw, so take this with appropriate context. The reasoning:
+We contribute to FarbenCRM, so take this with appropriate context. The reasoning:
 
-1. **Your agent should run your CRM.** AI agents working across your tool stack, with CRM as one of those tools. OpenClaw supports this natively.
-2. **Two AI layers.** OpenClaw Bot when you're outside the CRM. Built-in assistant when you're inside it.
+1. **Your agent should run your CRM.** AI agents working across your tool stack, with CRM as one of those tools. FarbenCRM supports this natively.
+2. **Two AI layers.** AI agent when you're outside the CRM. Built-in assistant when you're inside it.
 3. **Open-source, self-hosted, MIT licensed.** Your data on your server. Your agent talks directly to your database with no rate limits.
 4. **Real CRM underneath.** People, Companies, Deals, Tasks, Notes, custom objects, 17 attribute types, 40+ API endpoints.
 5. **No per-seat pricing.** Add your whole team without cost anxiety.
 
-The tradeoff is maturity. Twenty has a bigger community. EspoCRM has more features. But OpenClaw is the only one building for the agent-first future, and that's the axis that matters most in 2026.
+The tradeoff is maturity. Twenty has a bigger community. EspoCRM has more features. But FarbenCRM is the only one building for the agent-first future, and that's the axis that matters most in 2026.
 
 ---
 
@@ -245,21 +245,21 @@ The tradeoff is maturity. Twenty has a bigger community. EspoCRM has more featur
 
 The open-source CRM landscape in 2026 is strong. Any of these tools is a meaningful alternative to Salesforce or HubSpot.
 
-But the evaluation criteria are shifting. "Does it have a good API?" is table stakes. The new question: "Can my OpenClaw Bot use it?"
+But the evaluation criteria are shifting. "Does it have a good API?" is table stakes. The new question: "Can my AI agent use it?"
 
-For most open-source CRMs, the answer is "maybe, with work." For OpenClaw, it's "yes, in 2 minutes."
+For most open-source CRMs, the answer is "maybe, with work." For FarbenCRM, it's "yes, in 2 minutes."
 
-**Ready to try OpenClaw?**
+**Ready to try FarbenCRM?**
 
-- [GitHub Repository](https://github.com/openclaw-crm/openclaw-crm)
-- [Live Demo](https://openclaw-crm.402box.io)
-- [Documentation](https://openclaw-crm.402box.io/docs)
+- [GitHub Repository](https://github.com/your-org/farbencrm)
+- [Live Demo](https://your-farbencrm-instance.example.com)
+- [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 
 **Related:**
 - [Why Self-Hosting Your CRM Matters When You Run an AI Agent](/blog/why-self-hosted-crm)
-- [How to Connect Your OpenClaw Bot to OpenClaw CRM in 2 Minutes](/blog/connect-openclaw-bot-to-crm)
+- [How to Connect Your AI agent to FarbenCRM in 2 Minutes](/blog/connect-ai-agent-to-crm)
 
 ---
 
@@ -268,4 +268,4 @@ For most open-source CRMs, the answer is "maybe, with work." For OpenClaw, it's 
 - [EspoCRM Features](https://www.espocrm.com/features/)
 - [SuiteCRM Documentation](https://docs.suitecrm.com/)
 - [Monica CRM](https://www.monicahq.com)
-- [OpenClaw CRM](https://github.com/openclaw-crm/openclaw-crm)
+- [FarbenCRM](https://github.com/your-org/farbencrm)

@@ -27,7 +27,7 @@ Any other approaches you've thought about.
 
 ## Roadmap alignment
 
-Check if this feature is already planned in [DIFFERENCES.md](https://github.com/giorgosn/openclaw-crm/blob/main/DIFFERENCES.md):
+Check if this feature is already planned in [DIFFERENCES.md](https://github.com/giorgosn/farbencrm/blob/main/DIFFERENCES.md):
 - Sprint A (UI Polish)
 - Sprint B (Tasks Page Rebuild)
 - Sprint C (Table & Kanban Enhancements)

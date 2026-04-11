@@ -9,7 +9,7 @@ function hashKey(key: string): string {
 
 function generateApiKey(): string {
   const bytes = randomBytes(24);
-  return `oc_sk_${bytes.toString("hex")}`;
+  return `fc_sk_${bytes.toString("hex")}`;
 }
 
 export async function createApiKey(

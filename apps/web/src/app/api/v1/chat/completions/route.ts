@@ -8,12 +8,12 @@ import {
   getConversation,
   generateTitle,
   toolHandlers,
-  toolDefinitions,
-  callOpenRouter,
+  callAnthropic,
 } from "@/services/ai-chat";
+import type { AnthropicMessage, AnthropicContentBlock } from "@/services/ai-chat";
 import { db } from "@/db";
 import { conversations, messages } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export const maxDuration = 60;
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
   const config = await getAIConfig(ctx.workspaceId);
   if (!config) {
-    return badRequest("AI not configured. Set your OpenRouter API key in Settings > AI Agent.");
+    return badRequest("AI not configured. Set your Anthropic API key in Settings > AI Agent.");
   }
 
   // Save user message
@@ -48,17 +48,13 @@ export async function POST(req: NextRequest) {
     .set({ updatedAt: new Date() })
     .where(eq(conversations.id, conversationId));
 
-  // Build messages for OpenRouter
+  // Build messages for Anthropic
   const systemPrompt = await buildSystemPrompt(ctx.workspaceId);
   const historyMessages = await buildConversationMessages(conversationId);
-  const openRouterMessages = [
-    { role: "system" as const, content: systemPrompt },
-    ...historyMessages,
-  ];
 
   // Fire-and-forget title generation on first user message
-  const messageCount = historyMessages.filter((m) => m.role === "user").length;
-  if (messageCount === 1) {
+  const userMsgCount = historyMessages.filter((m) => m.role === "user").length;
+  if (userMsgCount === 1) {
     generateTitle(config.apiKey, config.model, message).then((title) => {
       db.update(conversations)
         .set({ title })
@@ -75,7 +71,7 @@ export async function POST(req: NextRequest) {
       const toolCtx = { workspaceId: ctx.workspaceId, userId: ctx.userId };
 
       try {
-        await streamCompletion(config, openRouterMessages, conversationId, toolCtx, controller, encoder);
+        await streamCompletion(config, systemPrompt, historyMessages, conversationId, toolCtx, controller, encoder);
       } catch (e) {
         const errorMsg = e instanceof Error ? e.message : "Stream error";
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: errorMsg })}\n\n`));
@@ -97,7 +93,8 @@ export async function POST(req: NextRequest) {
 
 async function streamCompletion(
   config: { apiKey: string; model: string },
-  openRouterMessages: Array<{ role: string; content?: string | null; tool_calls?: unknown[]; tool_call_id?: string; name?: string }>,
+  systemPrompt: string,
+  anthropicMessages: AnthropicMessage[],
   conversationId: string,
   toolCtx: { workspaceId: string; userId: string },
   controller: ReadableStreamDefaultController,
@@ -109,10 +106,10 @@ async function streamCompletion(
     return;
   }
 
-  const res = await callOpenRouter(config, openRouterMessages as Parameters<typeof callOpenRouter>[1], true);
+  const res = await callAnthropic(config, systemPrompt, anthropicMessages, true);
   if (!res.ok) {
     const errBody = await res.text();
-    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: `OpenRouter error: ${res.status}` })}\n\n`));
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: `Anthropic error: ${res.status}` })}\n\n`));
     return;
   }
 
@@ -120,8 +117,10 @@ async function streamCompletion(
   const decoder = new TextDecoder();
   let buffer = "";
   let fullContent = "";
-  let toolCalls: Array<{ id: string; type: string; function: { name: string; arguments: string } }> = [];
-  let currentToolCallIndex = -1;
+  // Track tool use blocks being built
+  const toolUseBlocks: Array<{ id: string; name: string; inputJson: string }> = [];
+  let currentBlockIndex = -1;
+  let currentBlockType = "";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -131,47 +130,76 @@ async function streamCompletion(
     const lines = buffer.split("\n");
     buffer = lines.pop() || "";
 
+    let eventType = "";
+
     for (const line of lines) {
+      if (line.startsWith("event: ")) {
+        eventType = line.slice(7).trim();
+        continue;
+      }
       if (!line.startsWith("data: ")) continue;
       const data = line.slice(6).trim();
-      if (data === "[DONE]") continue;
+      if (!data || data === "[DONE]") continue;
 
       try {
         const parsed = JSON.parse(data);
-        const delta = parsed.choices?.[0]?.delta;
-        if (!delta) continue;
 
-        // Content token
-        if (delta.content) {
-          fullContent += delta.content;
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: "token", content: delta.content })}\n\n`)
-          );
-        }
-
-        // Tool calls
-        if (delta.tool_calls) {
-          for (const tc of delta.tool_calls) {
-            const idx = tc.index ?? 0;
-            if (idx > currentToolCallIndex) {
-              currentToolCallIndex = idx;
-              toolCalls.push({
-                id: tc.id || "",
-                type: "function",
-                function: { name: tc.function?.name || "", arguments: "" },
+        switch (eventType) {
+          case "content_block_start": {
+            currentBlockIndex = parsed.index ?? 0;
+            const block = parsed.content_block;
+            if (block?.type === "text") {
+              currentBlockType = "text";
+            } else if (block?.type === "tool_use") {
+              currentBlockType = "tool_use";
+              toolUseBlocks.push({
+                id: block.id,
+                name: block.name,
+                inputJson: "",
               });
             }
-            const current = toolCalls[toolCalls.length - 1];
-            if (tc.id) current.id = tc.id;
-            if (tc.function?.name) current.function.name = tc.function.name;
-            if (tc.function?.arguments) current.function.arguments += tc.function.arguments;
+            break;
           }
+
+          case "content_block_delta": {
+            const delta = parsed.delta;
+            if (delta?.type === "text_delta" && delta.text) {
+              fullContent += delta.text;
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "token", content: delta.text })}\n\n`)
+              );
+            } else if (delta?.type === "input_json_delta" && delta.partial_json) {
+              const current = toolUseBlocks[toolUseBlocks.length - 1];
+              if (current) {
+                current.inputJson += delta.partial_json;
+              }
+            }
+            break;
+          }
+
+          case "content_block_stop":
+            currentBlockType = "";
+            break;
+
+          case "message_stop":
+            // End of message
+            break;
         }
       } catch {
         // Skip malformed lines
       }
     }
   }
+
+  // Convert tool_use blocks to the internal ToolCall format for storage
+  const toolCalls = toolUseBlocks.map((tb) => ({
+    id: tb.id,
+    type: "function" as const,
+    function: {
+      name: tb.name,
+      arguments: tb.inputJson,
+    },
+  }));
 
   // If we got tool calls, process them
   if (toolCalls.length > 0) {
@@ -181,36 +209,55 @@ async function streamCompletion(
       toolCalls: toolCalls,
     });
 
+    // Build the assistant content blocks for the next Anthropic request
+    const assistantContent: AnthropicContentBlock[] = [];
+    if (fullContent) {
+      assistantContent.push({ type: "text", text: fullContent });
+    }
+    for (const tb of toolUseBlocks) {
+      let input: Record<string, unknown> = {};
+      try { input = JSON.parse(tb.inputJson); } catch {}
+      assistantContent.push({ type: "tool_use", id: tb.id, name: tb.name, input });
+    }
+    anthropicMessages.push({ role: "assistant", content: assistantContent });
+
     // Check if any require confirmation
     for (const tc of toolCalls) {
       const handler = toolHandlers[tc.function.name];
       if (!handler) {
-        // Unknown tool - save error result
+        // Unknown tool
+        const errContent = JSON.stringify({ error: `Unknown tool: ${tc.function.name}` });
         await saveMessage(conversationId, "tool", {
-          content: JSON.stringify({ error: `Unknown tool: ${tc.function.name}` }),
+          content: errContent,
           toolCallId: tc.id,
           toolName: tc.function.name,
         });
-        openRouterMessages.push({
-          role: "assistant",
-          content: fullContent || null,
-          tool_calls: toolCalls as unknown[],
-        });
-        openRouterMessages.push({
-          role: "tool",
-          content: JSON.stringify({ error: `Unknown tool: ${tc.function.name}` }),
-          tool_call_id: tc.id,
-          name: tc.function.name,
-        });
+        // Add tool_result to messages for next round
+        const lastMsg = anthropicMessages[anthropicMessages.length - 1];
+        if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
+          (lastMsg.content as AnthropicContentBlock[]).push({
+            type: "tool_result",
+            tool_use_id: tc.id,
+            content: errContent,
+            is_error: true,
+          });
+        } else {
+          anthropicMessages.push({
+            role: "user",
+            content: [{
+              type: "tool_result",
+              tool_use_id: tc.id,
+              content: errContent,
+              is_error: true,
+            }],
+          });
+        }
         continue;
       }
 
       if (handler.requiresConfirmation) {
-        // Emit pending event and stop
         let parsedArgs: Record<string, unknown> = {};
-        try {
-          parsedArgs = JSON.parse(tc.function.arguments);
-        } catch {}
+        try { parsedArgs = JSON.parse(tc.function.arguments); } catch {}
 
         // Save metadata marking it as pending
         await db
@@ -243,9 +290,7 @@ async function streamCompletion(
 
       // Auto-execute read tools
       let parsedArgs: Record<string, unknown> = {};
-      try {
-        parsedArgs = JSON.parse(tc.function.arguments);
-      } catch {}
+      try { parsedArgs = JSON.parse(tc.function.arguments); } catch {}
 
       controller.enqueue(
         encoder.encode(
@@ -263,17 +308,18 @@ async function streamCompletion(
           toolName: tc.function.name,
         });
 
-        openRouterMessages.push({
-          role: "assistant",
-          content: fullContent || null,
-          tool_calls: toolCalls as unknown[],
-        });
-        openRouterMessages.push({
-          role: "tool",
+        // Add tool_result to messages
+        const toolResult: AnthropicContentBlock = {
+          type: "tool_result",
+          tool_use_id: tc.id,
           content: resultStr,
-          tool_call_id: tc.id,
-          name: tc.function.name,
-        });
+        };
+        const lastMsg = anthropicMessages[anthropicMessages.length - 1];
+        if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
+          (lastMsg.content as AnthropicContentBlock[]).push(toolResult);
+        } else {
+          anthropicMessages.push({ role: "user", content: [toolResult] });
+        }
       } catch (e) {
         const errStr = JSON.stringify({ error: e instanceof Error ? e.message : "Tool execution failed" });
         await saveMessage(conversationId, "tool", {
@@ -282,24 +328,25 @@ async function streamCompletion(
           toolName: tc.function.name,
         });
 
-        openRouterMessages.push({
-          role: "assistant",
-          content: fullContent || null,
-          tool_calls: toolCalls as unknown[],
-        });
-        openRouterMessages.push({
-          role: "tool",
+        const toolResult: AnthropicContentBlock = {
+          type: "tool_result",
+          tool_use_id: tc.id,
           content: errStr,
-          tool_call_id: tc.id,
-          name: tc.function.name,
-        });
+          is_error: true,
+        };
+        const lastMsg = anthropicMessages[anthropicMessages.length - 1];
+        if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
+          (lastMsg.content as AnthropicContentBlock[]).push(toolResult);
+        } else {
+          anthropicMessages.push({ role: "user", content: [toolResult] });
+        }
       }
     }
 
     // If no pending tool calls, continue the conversation
     const hasPending = toolCalls.some((tc) => toolHandlers[tc.function.name]?.requiresConfirmation);
     if (!hasPending) {
-      await streamCompletion(config, openRouterMessages, conversationId, toolCtx, controller, encoder, depth + 1);
+      await streamCompletion(config, systemPrompt, anthropicMessages, conversationId, toolCtx, controller, encoder, depth + 1);
     }
   } else {
     // No tool calls - save the final assistant message
@@ -309,7 +356,6 @@ async function streamCompletion(
         encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: msg.id })}\n\n`)
       );
     } else {
-      // Empty response - still emit done so frontend doesn't hang
       controller.enqueue(
         encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: null })}\n\n`)
       );

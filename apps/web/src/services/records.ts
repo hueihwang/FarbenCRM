@@ -1,8 +1,8 @@
 import { db } from "@/db";
 import { records, recordValues, attributes, objects } from "@/db/schema";
 import { eq, and, inArray, desc, asc, sql, type SQL } from "drizzle-orm";
-import { ATTRIBUTE_TYPE_COLUMN_MAP, type AttributeType } from "@openclaw-crm/shared";
-import type { FilterGroup, SortConfig } from "@openclaw-crm/shared";
+import { ATTRIBUTE_TYPE_COLUMN_MAP, type AttributeType } from "@farbencrm/shared";
+import type { FilterGroup, SortConfig } from "@farbencrm/shared";
 import { extractPersonalName } from "@/lib/display-name";
 import { buildFilterSQL, buildSortExpressions } from "@/lib/query-builder";
 import { batchGetRecordDisplayNames } from "./display-names";

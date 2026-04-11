@@ -28,7 +28,7 @@ If applicable, add screenshots to help explain the problem.
 
 - **OS**: (e.g., Windows 11, macOS 14, Ubuntu 24.04)
 - **Browser**: (e.g., Chrome 120, Firefox 121, Safari 17)
-- **OpenClaw version**: (e.g., 0.1.0-beta)
+- **FarbenCRM version**: (e.g., 0.1.0-beta)
 - **Deployment**: (Docker / Manual)
 - **Node version**: (e.g., 20.11.0)
 - **PostgreSQL version**: (e.g., 16.1)

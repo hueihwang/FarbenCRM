@@ -1,13 +1,13 @@
-# Contributing to OpenClaw CRM
+# Contributing to FarbenCRM
 
-Thanks for your interest in contributing to OpenClaw CRM! This guide will help you get started.
+Thanks for your interest in contributing to FarbenCRM! This guide will help you get started.
 
 ## Quick Start
 
 ```bash
 # 1. Fork and clone
-git clone https://github.com/YOUR_USERNAME/openclaw-crm.git
-cd openclaw-crm
+git clone https://github.com/YOUR_USERNAME/farbencrm.git
+cd farbencrm
 
 # 2. Install dependencies
 pnpm install
@@ -33,7 +33,7 @@ Open http://localhost:3001 and create an account to start testing.
 ## Project Structure
 
 ```
-openclaw-crm/
+farbencrm/
 ├── apps/web/                  # Next.js 15 application
 │   ├── src/
 │   │   ├── app/               # App Router pages & API routes
@@ -48,7 +48,7 @@ openclaw-crm/
 
 ## What to Work On
 
-- Check [open issues](https://github.com/giorgosn/openclaw-crm/issues) for bugs and feature requests
+- Check [open issues](https://github.com/your-org/farbencrm/issues) for bugs and feature requests
 - Issues labeled `good first issue` are great starting points
 - Issues labeled `help wanted` are where we especially need contributions
 - See [DIFFERENCES.md](./DIFFERENCES.md) for the roadmap of planned improvements
@@ -186,11 +186,11 @@ Open an issue with:
 - **What you expected to happen**
 - **What actually happened**
 - **Steps to reproduce** (1, 2, 3...)
-- **Environment**: Browser, OS, OpenClaw version, deployment method
+- **Environment**: Browser, OS, FarbenCRM version, deployment method
 - **Screenshots** if applicable
 - **Console errors** from browser DevTools
 
-Use the [Bug Report template](https://github.com/giorgosn/openclaw-crm/issues/new?template=bug_report.md).
+Use the [Bug Report template](https://github.com/your-org/farbencrm/issues/new?template=bug_report.md).
 
 ## Feature Requests
 
@@ -200,7 +200,7 @@ Open an issue describing:
 - **Alternatives** you've considered
 - **Screenshots or mockups** if applicable
 
-Use the [Feature Request template](https://github.com/giorgosn/openclaw-crm/issues/new?template=feature_request.md).
+Use the [Feature Request template](https://github.com/your-org/farbencrm/issues/new?template=feature_request.md).
 
 ## Development Tips
 
@@ -213,7 +213,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ### Database Inspection
 ```bash
 # Connect to PostgreSQL
-docker compose exec db psql -U postgres -d openclaw
+docker compose exec db psql -U postgres -d farbencrm
 
 # Or use Drizzle Studio (visual DB browser)
 pnpm db:studio
@@ -250,9 +250,9 @@ lsof -ti:3001 | xargs kill -9
 
 ## Questions?
 
-- Open a [discussion](https://github.com/giorgosn/openclaw-crm/discussions)
+- Open a [discussion](https://github.com/your-org/farbencrm/discussions)
 - Check existing issues and PRs
-- Read the [README](./README.md) and [API documentation](https://openclaw-crm.402box.io/llms.txt)
+- Read the [README](./README.md) and [API documentation](https://your-farbencrm-instance.example.com/llms.txt)
 
 ## License
 

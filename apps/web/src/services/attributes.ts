@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { attributes, selectOptions, statuses } from "@/db/schema";
 import { eq, and, max } from "drizzle-orm";
-import type { AttributeType } from "@openclaw-crm/shared";
+import type { AttributeType } from "@farbencrm/shared";
 
 export async function listAttributes(objectId: string) {
   const attrs = await db

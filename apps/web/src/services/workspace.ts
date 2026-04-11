@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { workspaces, workspaceMembers, users, objects, attributes, statuses } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { STANDARD_OBJECTS, DEAL_STAGES } from "@openclaw-crm/shared";
+import { STANDARD_OBJECTS, DEAL_STAGES } from "@farbencrm/shared";
 
 // ─── Workspace ───────────────────────────────────────────────────────
 
