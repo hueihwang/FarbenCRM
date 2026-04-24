@@ -62,7 +62,7 @@ export default async function BlogIndexPage() {
           <div className="flex items-center">
             <div className="flex items-center gap-1.5 sm:gap-3 mr-3 sm:mr-6">
               <a
-                href="https://github.com/giorgosn/farbencrm"
+                href="https://github.com/hueihwang/farbencrm"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full p-2 text-muted-foreground/50 transition-all hover:text-foreground hover:bg-foreground/[0.05]"
@@ -180,7 +180,7 @@ export default async function BlogIndexPage() {
               Compare
             </Link>
             <a
-              href="https://github.com/giorgosn/farbencrm"
+              href="https://github.com/hueihwang/farbencrm"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[12px] text-muted-foreground/60 transition-colors hover:text-muted-foreground"

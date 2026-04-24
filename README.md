@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
-  <a href="https://github.com/your-org/farbencrm/stargazers"><img src="https://img.shields.io/github/stars/giorgosn/farbencrm?style=social" alt="GitHub Stars"></a>
+  <a href="https://github.com/hueihwang/FarbenCRM/stargazers"><img src="https://img.shields.io/github/stars/hueihwang/FarbenCRM?style=social" alt="GitHub Stars"></a>
   <img src="https://img.shields.io/badge/TypeScript-100%25-3178C6" alt="TypeScript">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js 15">
 </p>
