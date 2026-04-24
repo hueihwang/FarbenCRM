@@ -38,6 +38,8 @@ interface RecordTableProps {
   onUpdateRecord: (recordId: string, slug: string, value: unknown) => void;
   onCreateRecord: () => void;
   objectSlug: string;
+  /** When false, cells are read-only (click does nothing). Defaults to false. */
+  editMode?: boolean;
 }
 
 // ─── Component ───────────────────────────────────────────────────────
@@ -48,9 +50,16 @@ export function RecordTable({
   onUpdateRecord,
   onCreateRecord,
   objectSlug,
+  editMode = false,
 }: RecordTableProps) {
   const router = useRouter();
   const [editingCell, setEditingCell] = useState<{ rowId: string; colId: string } | null>(null);
+
+  // When edit mode is turned off while a cell is open, close the editor.
+  if (!editMode && editingCell) {
+    // Defer to next tick so we don't update state during render
+    Promise.resolve().then(() => setEditingCell(null));
+  }
 
   const columns = useMemo<ColumnDef<RecordRow>[]>(() => {
     // Open button column
@@ -75,6 +84,7 @@ export function RecordTable({
       cell: ({ row }: { row: { original: RecordRow; id: string } }) => {
         const val = row.original.values[attr.slug];
         const isEditing =
+          editMode &&
           editingCell?.rowId === row.original.id &&
           editingCell?.colId === attr.slug;
 
@@ -98,10 +108,16 @@ export function RecordTable({
 
         return (
           <div
-            className="cursor-pointer truncate px-1"
-            onClick={() =>
-              setEditingCell({ rowId: row.original.id, colId: attr.slug })
+            className={cn(
+              "truncate px-1",
+              editMode ? "cursor-pointer rounded hover:bg-accent/40" : "cursor-default"
+            )}
+            onClick={
+              editMode
+                ? () => setEditingCell({ rowId: row.original.id, colId: attr.slug })
+                : undefined
             }
+            title={editMode ? "Click to edit" : undefined}
           >
             <AttributeCell
               type={attr.type}
@@ -115,7 +131,7 @@ export function RecordTable({
     }));
 
     return [openCol, ...attrCols];
-  }, [attributes, editingCell, onUpdateRecord, objectSlug, router]);
+  }, [attributes, editingCell, onUpdateRecord, objectSlug, router, editMode]);
 
   const table = useReactTable({
     data: records,

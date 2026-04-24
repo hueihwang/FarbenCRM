@@ -20,7 +20,7 @@ export const conversations = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     title: text("title").notNull().default("New conversation"),
-    model: text("model").notNull().default("anthropic/claude-sonnet-4"),
+    model: text("model").notNull().default("claude-sonnet-4-20250514"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -39,7 +39,7 @@ export const messages = pgTable(
       .references(() => conversations.id, { onDelete: "cascade" }),
     role: messageRoleEnum("role").notNull(),
     content: text("content"),
-    toolCalls: jsonb("tool_calls"), // Raw OpenRouter tool_calls array
+    toolCalls: jsonb("tool_calls"), // Tool calls — stored in OpenAI-style {id, type, function:{name, arguments}} shape; converted to Anthropic tool_use blocks at send time
     toolCallId: text("tool_call_id"), // For tool result messages
     toolName: text("tool_name"),
     metadata: jsonb("metadata"), // confirmation status, etc.

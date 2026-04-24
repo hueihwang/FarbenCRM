@@ -302,7 +302,7 @@ Give it one week. If you're still manually entering data after that, something w
 
 **Ready to let your AI agent handle the CRM busywork?**
 
-[Try FarbenCRM (Free, Self-Hosted)](https://github.com/your-org/farbencrm) | [Live Demo](https://your-farbencrm-instance.example.com) | [Documentation](https://your-farbencrm-instance.example.com/docs)
+[Try FarbenCRM (Free, Self-Hosted)](https://github.com/your-org/farbencrm) | [Live Demo](https://your-farbencrm-instance.example.com)
 
 ---
 

@@ -17,11 +17,11 @@ import {
   List,
   Plus,
   Settings,
-  BookOpen,
   ChevronsUpDown,
   Check,
   Sun,
   Moon,
+  BarChart2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -38,6 +38,7 @@ const mainNav = [
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/notes", label: "Notes", icon: StickyNote },
   { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/marketing", label: "Marketing", icon: BarChart2 },
 ];
 
 const objectNav = [
@@ -47,7 +48,6 @@ const objectNav = [
 ];
 
 const bottomNav = [
-  { href: "/docs", label: "Docs", icon: BookOpen },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -188,7 +188,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <NavItem
             key={item.href}
             {...item}
-            active={pathname === item.href}
+            active={item.href === "/marketing" ? pathname.startsWith("/marketing") : pathname === item.href}
             expanded={expanded}
             onClick={onNavigate}
           />

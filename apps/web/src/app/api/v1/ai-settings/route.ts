@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 interface WorkspaceSettings {
   anthropicApiKey?: string;
   anthropicModel?: string;
-  tavilyApiKey?: string;
+  workspaceKnowledge?: string;
 }
 
 export async function GET(req: NextRequest) {
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   return success({
     model: settings.anthropicModel || "claude-sonnet-4-20250514",
     hasApiKey: !!settings.anthropicApiKey,
-    hasTavilyKey: !!settings.tavilyApiKey,
+    workspaceKnowledge: settings.workspaceKnowledge || "",
   });
 }
 
@@ -37,10 +37,14 @@ export async function PATCH(req: NextRequest) {
   if (adminCheck) return adminCheck;
 
   const body = await req.json();
-  const { apiKey, model, tavilyApiKey } = body as { apiKey?: string; model?: string; tavilyApiKey?: string };
+  const { apiKey, model, workspaceKnowledge } = body as {
+    apiKey?: string;
+    model?: string;
+    workspaceKnowledge?: string;
+  };
 
-  if (!apiKey && !model && tavilyApiKey === undefined) {
-    return badRequest("Provide apiKey, model, or tavilyApiKey");
+  if (apiKey === undefined && model === undefined && workspaceKnowledge === undefined) {
+    return badRequest("Provide apiKey, model, or workspaceKnowledge");
   }
 
   const [workspace] = await db
@@ -54,7 +58,7 @@ export async function PATCH(req: NextRequest) {
 
   if (apiKey !== undefined) updated.anthropicApiKey = apiKey;
   if (model !== undefined) updated.anthropicModel = model;
-  if (tavilyApiKey !== undefined) updated.tavilyApiKey = tavilyApiKey;
+  if (workspaceKnowledge !== undefined) updated.workspaceKnowledge = workspaceKnowledge;
 
   await db
     .update(workspaces)
@@ -64,6 +68,6 @@ export async function PATCH(req: NextRequest) {
   return success({
     model: updated.anthropicModel || "claude-sonnet-4-20250514",
     hasApiKey: !!updated.anthropicApiKey,
-    hasTavilyKey: !!updated.tavilyApiKey,
+    workspaceKnowledge: updated.workspaceKnowledge || "",
   });
 }

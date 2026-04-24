@@ -120,9 +120,13 @@ export function AttributeCell({ type, value, options, statuses }: AttributeCellP
     }
 
     case "location": {
-      const loc = value as { city?: string; state?: string; countryCode?: string };
+      // Tolerate legacy rows saved as a bare string by the pre-fix editor
+      if (typeof value === "string" && value.trim()) {
+        return <span>{value}</span>;
+      }
+      const loc = value as { city?: string; state?: string; countryCode?: string; line1?: string };
       const parts = [loc?.city, loc?.state, loc?.countryCode].filter(Boolean);
-      return <span>{parts.join(", ") || "—"}</span>;
+      return <span>{parts.join(", ") || loc?.line1 || "—"}</span>;
     }
 
     case "record_reference": {
@@ -147,8 +151,23 @@ export function AttributeCell({ type, value, options, statuses }: AttributeCellP
       return <span className="text-muted-foreground/50">—</span>;
     }
 
-    case "actor_reference":
-      return <span>{String(value)}</span>;
+    case "actor_reference": {
+      if (!value) return <span className="text-muted-foreground/50">—</span>;
+      // Hydrated shape from the records service: { id, displayName, email }
+      if (typeof value === "object" && "displayName" in (value as Record<string, unknown>)) {
+        const u = value as { displayName: string; email?: string };
+        return (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+              {(u.displayName || "?").charAt(0).toUpperCase()}
+            </span>
+            <span className="truncate">{u.displayName}</span>
+          </span>
+        );
+      }
+      // Fallback for a bare user ID string
+      return <span className="text-muted-foreground/70 text-xs">{String(value).slice(0, 8)}…</span>;
+    }
 
     case "interaction":
       return <span className="text-muted-foreground">Interaction</span>;

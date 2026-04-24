@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     .where(eq(conversations.id, conversationId));
 
   // Continue streaming with Anthropic
-  const systemPrompt = await buildSystemPrompt(ctx.workspaceId);
+  const systemPrompt = await buildSystemPrompt(ctx.workspaceId, ctx.userId);
   const anthropicMessages = await buildConversationMessages(conversationId);
 
   const encoder = new TextEncoder();
@@ -138,12 +138,14 @@ async function streamContinuation(
   encoder: TextEncoder,
   depth = 0
 ) {
-  if (depth > 10) {
+  const MAX_TOOL_ROUNDS = 6;
+  const forceTextOnly = depth >= MAX_TOOL_ROUNDS;
+  if (depth > 12) {
     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: "Too many tool call rounds" })}\n\n`));
     return;
   }
 
-  const res = await callAnthropic(config, systemPrompt, anthropicMessages, true);
+  const res = await callAnthropic(config, systemPrompt, anthropicMessages, true, forceTextOnly ? "none" : "auto");
   if (!res.ok) {
     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: `Anthropic error: ${res.status}` })}\n\n`));
     return;
@@ -155,6 +157,8 @@ async function streamContinuation(
   let fullContent = "";
   const toolUseBlocks: Array<{ id: string; name: string; inputJson: string }> = [];
   let currentBlockType = "";
+  let streamError: string | null = null;
+  let stopReason: string | null = null;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -186,6 +190,13 @@ async function streamContinuation(
             } else if (block?.type === "tool_use") {
               currentBlockType = "tool_use";
               toolUseBlocks.push({ id: block.id, name: block.name, inputJson: "" });
+            } else if (block?.type === "web_search_tool_use") {
+              currentBlockType = "web_search_tool_use";
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "web_search_start" })}\n\n`)
+              );
+            } else if (block?.type === "web_search_tool_result") {
+              currentBlockType = "web_search_tool_result";
             }
             break;
           }
@@ -201,11 +212,34 @@ async function streamContinuation(
             break;
           }
           case "content_block_stop":
+            if (currentBlockType === "web_search_tool_result") {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "web_search_done" })}\n\n`)
+              );
+            }
             currentBlockType = "";
             break;
+          case "message_delta":
+            if (parsed.delta?.stop_reason) stopReason = parsed.delta.stop_reason;
+            break;
+          case "error": {
+            const msg = parsed.error?.message || parsed.message || "Unknown streaming error";
+            streamError = msg;
+            console.error("[chat tool-confirm] Anthropic stream error:", msg, parsed);
+            break;
+          }
         }
       } catch {}
     }
+  }
+
+  if (streamError) {
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: streamError })}\n\n`));
+    const errMsg = await saveMessage(conversationId, "assistant", {
+      content: `⚠️ The model returned an error: ${streamError}. Please try again or rephrase your question.`,
+    });
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: errMsg.id })}\n\n`));
+    return;
   }
 
   const toolCalls = toolUseBlocks.map((tb) => ({
@@ -294,6 +328,15 @@ async function streamContinuation(
     }
   } else if (fullContent) {
     const msg = await saveMessage(conversationId, "assistant", { content: fullContent });
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: msg.id })}\n\n`));
+  } else {
+    // Empty continuation — surface a fallback so UI doesn't hang.
+    console.error("[chat tool-confirm] Empty assistant response", { depth, stopReason });
+    const fallback = stopReason === "max_tokens"
+      ? "⚠️ Response was cut off (token limit reached). Try asking a more focused question."
+      : "⚠️ The model returned an empty response after the tool call. Try rephrasing or starting a fresh conversation.";
+    const msg = await saveMessage(conversationId, "assistant", { content: fallback });
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "token", content: fallback })}\n\n`));
     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: msg.id })}\n\n`));
   }
 }

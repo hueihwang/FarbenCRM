@@ -67,7 +67,7 @@ Even if you pay a developer $3,000 to set up and maintain FarbenCRM, you're savi
 | **Email Sync** | ❌ | ✅ Gmail/Outlook | ❌ (API integration) |
 | **Calendar Sync** | ❌ | ✅ | ❌ |
 | **Automations** | Basic | ✅ Advanced | API-based |
-| **AI Assistant** | ❌ | ❌ | ✅ Built-in (OpenRouter) |
+| **AI Assistant** | ❌ | ❌ | ✅ Built-in (Anthropic Claude) |
 | **AI Agent Integration** | ❌ | ❌ | ✅ Native (AI agent) |
 | **API Access** | ✅ Limited | ✅ Full | ✅ Full (40+ endpoints) |
 | **Self-Hosted** | ❌ | ❌ | ✅ |
@@ -119,7 +119,7 @@ FarbenCRM's AI is built-in and understands your schema:
 - **Talk in plain English:** "Show me all deals over $20k closing this quarter"
 - **8 read tools:** Search records, get details, browse lists (auto-execute)
 - **5 write tools:** Create/update/delete records, tasks, notes (require confirmation)
-- **200+ models:** Claude, GPT-4o, Llama, Gemini via OpenRouter
+- **Anthropic's Claude API direct:** Pick Sonnet 4, Opus 4, or Haiku 4.5 in workspace settings
 - **Dynamic schema awareness:** The AI knows your custom objects and fields
 
 You can ask: *"Which companies in Austin haven't been contacted in 60 days?"*, and it works.
@@ -315,9 +315,9 @@ Open `http://localhost:3001` and create an account. No credit card. No per-seat 
 **Prefer not to self-host?** Sign up at [your FarbenCRM instance](https://your-farbencrm-instance.example.com) for a hosted instance with no setup. Same features, no infrastructure required. Connect your AI agent from there.
 
 ### Setting Up the AI Assistant
-1. Get a free API key from [OpenRouter](https://openrouter.ai) (~$0.50/1K requests)
+1. Get an API key from [Anthropic Console](https://console.anthropic.com/settings/keys) (pay-as-you-go, ~$0.01 per chat turn on Sonnet 4)
 2. Go to **Settings → AI** in FarbenCRM
-3. Enter your API key, select a model (Claude, GPT-4o, etc.)
+3. Enter your Anthropic API key, select a Claude model (Sonnet 4, Opus 4, or Haiku 4.5)
 4. Navigate to `/chat` and start asking questions
 
 ## FAQ
@@ -351,7 +351,6 @@ The good news? You don't have to choose forever. Try FarbenCRM for free. If it d
 
 → [GitHub Repository](https://github.com/your-org/farbencrm)
 → [Live Demo](https://your-farbencrm-instance.example.com)
-→ [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 

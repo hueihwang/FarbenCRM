@@ -43,6 +43,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const [isSearchingWeb, setIsSearchingWeb] = useState(false);
   const [pendingToolCall, setPendingToolCall] = useState<PendingToolCall | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -160,6 +161,14 @@ export default function ChatPage() {
           });
           break;
 
+        case "web_search_start":
+          setIsSearchingWeb(true);
+          break;
+
+        case "web_search_done":
+          setIsSearchingWeb(false);
+          break;
+
         case "done":
           break;
 
@@ -203,6 +212,7 @@ export default function ChatPage() {
     setStreaming(false);
     isStreamingRef.current = false;
     setStreamingContent("");
+    setIsSearchingWeb(false);
     abortRef.current = null;
     await fetchConversations();
   }
@@ -231,6 +241,7 @@ export default function ChatPage() {
     setStreaming(true);
     isStreamingRef.current = true;
     setStreamingContent("");
+    setIsSearchingWeb(false);
     setPendingToolCall(null);
 
     // Optimistically add user message
@@ -373,6 +384,7 @@ export default function ChatPage() {
           messages={visibleMessages}
           streamingContent={streamingContent}
           isStreaming={streaming}
+          isSearchingWeb={isSearchingWeb}
           pendingToolCall={pendingToolCall}
           confirmLoading={confirmLoading}
           onApprove={handleApprove}

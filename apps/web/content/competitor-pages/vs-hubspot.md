@@ -72,7 +72,7 @@ HubSpot charges extra for [ChatSpot](https://www.hubspot.com/products/chatspot),
 - **Talk to your CRM in plain English**: "Show me all deals over $10k closing this month"
 - **8 read tools** (auto-execute): Search records, get details, browse lists
 - **5 write tools** (require confirmation): Create/update/delete records, tasks, notes
-- **Powered by OpenRouter**: Choose from Claude, GPT-4o, Llama, Gemini, and 200+ models
+- **Powered by Anthropic's Claude API**: Pick Sonnet 4, Opus 4, or Haiku 4.5 in workspace settings
 - **Dynamic schema awareness**: The AI knows your custom objects and fields
 
 ### Developer-Friendly API
@@ -150,7 +150,7 @@ HubSpot's per-seat pricing compounds fast:
 FarbenCRM costs the same for 5 users or 500 users: the cost of hosting. A $10/month VPS (DigitalOcean, Hetzner, Linode) handles most small teams. A $50/month server handles hundreds of users.
 
 ### 3. **AI Built-In, Not Bolted On**
-HubSpot's AI tools (ChatSpot, content assistant) are add-ons that cost extra. FarbenCRM's AI assistant is included. It understands your schema dynamically, can query your actual data, and supports 200+ models via OpenRouter.
+HubSpot's AI tools (ChatSpot, content assistant) are add-ons that cost extra. FarbenCRM's AI assistant is included. It understands your schema dynamically, can query your actual data, and runs on Anthropic's Claude API — bring your own key.
 
 You can ask: *"Show me all companies in Austin with deals over $25k that haven't been contacted in 30 days"*, and it works.
 
@@ -203,7 +203,7 @@ Let's compare the 5-year total cost of ownership for a 10-person sales team:
 ### Scenario: FarbenCRM on DigitalOcean
 - **VPS cost:** $20/month (4GB RAM, 80GB SSD)
 - **Domain + SSL:** $15/year
-- **OpenRouter AI credits:** $20/month (optional)
+- **Anthropic API credits:** $20/month (optional)
 - **Year 1:** ($20 + $20) × 12 + $15 = **$495**
 - **5-year total:** ($40 × 60) + ($15 × 5) = **$2,475**
 
@@ -267,9 +267,9 @@ Open `http://localhost:3001` and create an account. No credit card. No sales cal
 **Prefer not to self-host?** Sign up at [your FarbenCRM instance](https://your-farbencrm-instance.example.com) for a hosted instance with no setup. Same features, no infrastructure required. Connect your AI agent from there.
 
 ### Setting Up the AI Assistant
-1. Get a free API key from [OpenRouter](https://openrouter.ai) (pay-as-you-go, ~$0.50/1K requests)
+1. Get an API key from [Anthropic Console](https://console.anthropic.com/settings/keys) (pay-as-you-go, ~$0.01 per chat turn on Sonnet 4)
 2. Go to **Settings → AI** in FarbenCRM
-3. Enter your API key and select a model (Claude, GPT-4o, Llama, etc.)
+3. Enter your Anthropic API key and select a Claude model (Sonnet 4, Opus 4, or Haiku 4.5)
 4. Navigate to `/chat` and start asking questions
 
 ## FAQ
@@ -301,7 +301,6 @@ The good news? HubSpot and FarbenCRM solve different problems. If you need both,
 
 → [GitHub Repository](https://github.com/your-org/farbencrm)
 → [Live Demo](https://your-farbencrm-instance.example.com)
-→ [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 

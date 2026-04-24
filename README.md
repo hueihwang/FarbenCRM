@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://your-farbencrm-instance.example.com">Live Demo</a> · <a href="https://your-farbencrm-instance.example.com/docs">Docs</a> · <a href="https://your-farbencrm-instance.example.com/llms-api.txt">API Reference</a>
+  <a href="https://your-farbencrm-instance.example.com">Live Demo</a> · <a href="https://your-farbencrm-instance.example.com/llms-api.txt">API Reference</a>
 </p>
 
 ---
@@ -28,7 +28,7 @@ Self-host it on your own server. No vendor lock-in, no per-seat pricing, no data
 
 ## AI agent Integration
 
-FarbenCRM plugs directly into your [AI agent](https://your-farbencrm-instance.example.com/docs#ai-agent). Generate a SKILL.md and config from **Settings > FarbenCRM**, drop them into your bot's skills folder, and your agent can manage your CRM through natural language.
+FarbenCRM plugs directly into your AI agent. Generate a SKILL.md and config from **Settings > FarbenCRM**, drop them into your bot's skills folder, and your agent can manage your CRM through natural language.
 
 - 40+ REST API endpoints your bot can call
 - Bearer token auth with `fc_sk_` prefix API keys
@@ -55,7 +55,7 @@ FarbenCRM plugs directly into your [AI agent](https://your-farbencrm-instance.ex
 
 ### Built-in AI Chat Agent
 
-Talk to your CRM data in plain English. Powered by [OpenRouter](https://openrouter.ai) with support for Claude, GPT-4o, Llama, Gemini, and more.
+Talk to your CRM data in plain English. Powered directly by Anthropic's Claude API.
 
 - 8 read tools (auto-execute): search records, list objects, get record details, list tasks, get notes, browse lists
 - 5 write tools (require confirmation): create/update/delete records, create tasks, create notes
@@ -77,7 +77,7 @@ Talk to your CRM data in plain English. Powered by [OpenRouter](https://openrout
 | Tables | TanStack Table v8 |
 | Kanban | dnd-kit |
 | Rich Text | TipTap |
-| AI | OpenRouter (multi-model) |
+| AI | Anthropic Claude API (direct) |
 | Monorepo | Turborepo + pnpm |
 
 ## Prerequisites
@@ -160,9 +160,9 @@ See `.env.example` for all configurable environment variables.
 
 ## AI Chat Setup
 
-1. Get an API key from [OpenRouter](https://openrouter.ai)
+1. Get an API key from [Anthropic Console](https://console.anthropic.com/settings/keys)
 2. Go to **Settings > AI** in the app
-3. Enter your OpenRouter API key and select a model
+3. Enter your Anthropic API key and select a Claude model
 4. Navigate to **/chat** and start talking to your data
 
 ## Project Structure

@@ -111,7 +111,7 @@ FarbenCRM's AI is built-in and understands your schema:
 - **Talk in plain English:** "Show me all companies in Austin with deals over $15k"
 - **8 read tools:** Search records, get details, browse lists (auto-execute)
 - **5 write tools:** Create/update/delete records, tasks, notes (require confirmation)
-- **200+ models:** Claude, GPT-4o, Llama, Gemini via OpenRouter
+- **Anthropic's Claude API direct:** Pick Sonnet 4, Opus 4, or Haiku 4.5 in workspace settings
 
 You can ask: *"Which contacts haven't been contacted in 90 days?"*, and get an instant answer.
 
@@ -283,9 +283,9 @@ Open `http://localhost:3001` and create an account. No credit card. No per-seat 
 **Prefer not to self-host?** Sign up at [your FarbenCRM instance](https://your-farbencrm-instance.example.com) for a hosted instance with no setup. Same features, no infrastructure required. Connect your AI agent from there.
 
 ### Setting Up the AI Assistant
-1. Get a free API key from [OpenRouter](https://openrouter.ai) (~$0.50/1K requests)
+1. Get an API key from [Anthropic Console](https://console.anthropic.com/settings/keys) (pay-as-you-go, ~$0.01 per chat turn on Sonnet 4)
 2. Go to **Settings → AI** in FarbenCRM
-3. Enter your API key, select a model (Claude, GPT-4o, etc.)
+3. Enter your Anthropic API key, select a Claude model (Sonnet 4, Opus 4, or Haiku 4.5)
 4. Navigate to `/chat` and start asking questions
 
 ## FAQ
@@ -317,7 +317,6 @@ The good news? Both have solid CSV import/export, so switching is painless. Try 
 
 → [GitHub Repository](https://github.com/your-org/farbencrm)
 → [Live Demo](https://your-farbencrm-instance.example.com)
-→ [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 

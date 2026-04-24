@@ -12,7 +12,7 @@ import { SortBuilder } from "@/components/filters/sort-builder";
 import { Popover } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { CSVImportModal } from "@/components/records/csv-import-modal";
-import { generateCSV, downloadCSV } from "@/lib/csv-utils";
+import { downloadExcel } from "@/lib/csv-utils";
 import {
   Plus,
   RefreshCw,
@@ -22,6 +22,8 @@ import {
   ArrowUpDown,
   Download,
   Upload,
+  Pencil,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +57,7 @@ export default function ObjectPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   // Auto-detect if board view is available (has a status attribute)
   const statusAttr = object?.attributes.find((a) => a.type === "status");
@@ -187,8 +190,12 @@ export default function ObjectPage() {
             size="sm"
             className="text-xs gap-1"
             onClick={() => {
-              const csv = generateCSV(records, object.attributes as any);
-              downloadCSV(csv, `${object.pluralName.toLowerCase()}.csv`);
+              const date = new Date().toISOString().slice(0, 10);
+              downloadExcel(
+                records,
+                object.attributes as any,
+                `${object.pluralName.toLowerCase()}-${date}.xlsx`
+              );
             }}
           >
             <Download className="h-3.5 w-3.5" />
@@ -203,6 +210,20 @@ export default function ObjectPage() {
             <Upload className="h-3.5 w-3.5" />
             Import
           </Button>
+
+          {/* Edit mode toggle — table cells are read-only unless this is on */}
+          {view === "table" && (
+            <Button
+              variant={editMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setEditMode((v) => !v)}
+              className="text-xs gap-1"
+              title={editMode ? "Click cells to edit — press Done when finished" : "Turn on edit mode to change values inline"}
+            >
+              {editMode ? <Check className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
+              {editMode ? "Done editing" : "Edit"}
+            </Button>
+          )}
 
           <Button variant="ghost" size="icon" onClick={fetchData} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -260,6 +281,7 @@ export default function ObjectPage() {
             onUpdateRecord={updateRecord}
             onCreateRecord={() => setCreateOpen(true)}
             objectSlug={slug}
+            editMode={editMode}
           />
         ) : (
           <RecordKanban

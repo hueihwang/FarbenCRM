@@ -59,6 +59,7 @@
     "remark-gfm": "^4.0.1",
     "remark-html": "^16.0.1",
     "tailwind-merge": "^2.6.0",
+    "write-excel-file": "^2.3.1",
     "zod": "^3.24.0"
   },
   "devDependencies": {

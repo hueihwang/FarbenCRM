@@ -14,12 +14,11 @@ const MODELS = [
 
 export default function AISettingsPage() {
   const [apiKey, setApiKey] = useState("");
-  const [tavilyKey, setTavilyKey] = useState("");
   const [model, setModel] = useState("claude-sonnet-4-20250514");
   const [hasApiKey, setHasApiKey] = useState(false);
-  const [hasTavilyKey, setHasTavilyKey] = useState(false);
   const [showKey, setShowKey] = useState(false);
-  const [showTavilyKey, setShowTavilyKey] = useState(false);
+  const [workspaceKnowledge, setWorkspaceKnowledge] = useState("");
+  const [knowledgeSaved, setKnowledgeSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
@@ -32,7 +31,7 @@ export default function AISettingsPage() {
         if (data.data) {
           setModel(data.data.model);
           setHasApiKey(data.data.hasApiKey);
-          setHasTavilyKey(data.data.hasTavilyKey);
+          setWorkspaceKnowledge(data.data.workspaceKnowledge || "");
         }
       })
       .catch(() => {});
@@ -43,7 +42,6 @@ export default function AISettingsPage() {
     try {
       const body: Record<string, string> = { model };
       if (apiKey) body.apiKey = apiKey;
-      if (tavilyKey) body.tavilyApiKey = tavilyKey;
 
       const res = await fetch("/api/v1/ai-settings", {
         method: "PATCH",
@@ -54,9 +52,25 @@ export default function AISettingsPage() {
       if (res.ok) {
         const data = await res.json();
         setHasApiKey(data.data.hasApiKey);
-        setHasTavilyKey(data.data.hasTavilyKey);
         setApiKey("");
-        setTavilyKey("");
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSaveKnowledge() {
+    setSaving(true);
+    setKnowledgeSaved(false);
+    try {
+      const res = await fetch("/api/v1/ai-settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceKnowledge }),
+      });
+      if (res.ok) {
+        setKnowledgeSaved(true);
+        setTimeout(() => setKnowledgeSaved(false), 2500);
       }
     } finally {
       setSaving(false);
@@ -151,42 +165,6 @@ export default function AISettingsPage() {
           </select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="tavilyKey">Tavily API Key <span className="text-muted-foreground font-normal">(web search)</span></Label>
-          <div className="relative">
-            <Input
-              id="tavilyKey"
-              type={showTavilyKey ? "text" : "password"}
-              placeholder={hasTavilyKey ? "••••••••••••••••" : "tvly-..."}
-              value={tavilyKey}
-              onChange={(e) => setTavilyKey(e.target.value)}
-              className="pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowTavilyKey(!showTavilyKey)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              {showTavilyKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-          {hasTavilyKey && !tavilyKey && (
-            <p className="text-xs text-muted-foreground">Tavily key is set. Enter a new key to replace it.</p>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Optional. Enables the AI to search the web for company info, news, and prospect research.{" "}
-            <a
-              href="https://app.tavily.com/home"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              Get a free key at tavily.com
-            </a>{" "}
-            (1,000 searches/month free).
-          </p>
-        </div>
-
         <div className="flex items-center gap-3 pt-2">
           <Button onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
@@ -200,6 +178,46 @@ export default function AISettingsPage() {
             <span className={`flex items-center gap-1 text-sm ${testResult === "success" ? "text-green-600" : "text-red-600"}`}>
               {testResult === "success" ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
               {testMessage}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="border-t pt-8 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">Company knowledge</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Shared context about your organization — products, customers, internal jargon, policies, tone. The AI reads this on every conversation for every user, so it answers like someone who already knows the business. Keep it tight (a few thousand words max).
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="workspaceKnowledge">Knowledge base</Label>
+          <textarea
+            id="workspaceKnowledge"
+            value={workspaceKnowledge}
+            onChange={(e) => setWorkspaceKnowledge(e.target.value)}
+            rows={14}
+            placeholder={`About Farben:
+- What the company does, who the customers are
+- Key products, services, or brands
+- Internal terminology and abbreviations
+- Tone and voice conventions
+- Anything else the AI should treat as background knowledge`}
+            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring font-mono"
+          />
+          <p className="text-xs text-muted-foreground">
+            {workspaceKnowledge.length.toLocaleString()} characters · ~{Math.ceil(workspaceKnowledge.length / 4).toLocaleString()} tokens per message
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={handleSaveKnowledge} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Save knowledge
+          </Button>
+          {knowledgeSaved && (
+            <span className="flex items-center gap-1 text-sm text-green-600">
+              <CheckCircle2 className="h-4 w-4" />
+              Saved
             </span>
           )}
         </div>

@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmationCard } from "./confirmation-card";
-import { Bot, User, Wrench } from "lucide-react";
+import { Bot, User, Wrench, Globe } from "lucide-react";
 
 interface ToolCallPending {
   id: string;
@@ -37,6 +37,7 @@ interface MessageListProps {
   messages: Message[];
   streamingContent: string;
   isStreaming: boolean;
+  isSearchingWeb: boolean;
   pendingToolCall: PendingToolCall | null;
   confirmLoading: boolean;
   onApprove: () => void;
@@ -100,6 +101,7 @@ export function MessageList({
   messages,
   streamingContent,
   isStreaming,
+  isSearchingWeb,
   pendingToolCall,
   confirmLoading,
   onApprove,
@@ -109,7 +111,7 @@ export function MessageList({
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingContent, isStreaming, pendingToolCall]);
+  }, [messages, streamingContent, isStreaming, isSearchingWeb, pendingToolCall]);
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
@@ -225,12 +227,19 @@ export function MessageList({
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
               <Bot className="h-4 w-4" />
             </div>
-            <div className="rounded-lg px-3 py-2 text-sm bg-muted max-w-[80%]">
-              {streamingContent ? (
+            <div className="rounded-lg px-3 py-2 text-sm bg-muted max-w-[80%] space-y-2">
+              {streamingContent && (
                 <div className="whitespace-pre-wrap break-words prose prose-sm dark:prose-invert max-w-none">
                   <SimpleMarkdown content={streamingContent} />
                 </div>
-              ) : (
+              )}
+              {isSearchingWeb && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse">
+                  <Globe className="h-3 w-3" />
+                  Searching the web…
+                </div>
+              )}
+              {!streamingContent && !isSearchingWeb && (
                 <div className="flex items-center gap-1 py-1 px-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />

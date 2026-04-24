@@ -7,14 +7,12 @@
 FarbenCRM is a free, open-source, self-hosted CRM built for AI-native workflows. It ships with a full REST API, machine-readable documentation, and first-class AI agent integration so your AI agent can manage contacts, deals, tasks, and notes without any glue code.
 
 - Website: https://your-farbencrm-instance.example.com
-- Docs: https://your-farbencrm-instance.example.com/docs
 - GitHub: https://github.com/your-org/farbencrm
 - License: MIT
 
 ## Key Pages
 
 - [Homepage](https://your-farbencrm-instance.example.com): product overview, features, and signup
-- [Documentation](https://your-farbencrm-instance.example.com/docs): setup guides, AI agent integration, API keys, data import
 - [Blog](https://your-farbencrm-instance.example.com/blog): product updates and guides
 - [Comparisons](https://your-farbencrm-instance.example.com/compare): how FarbenCRM compares to other CRMs
 
@@ -26,7 +24,7 @@ FarbenCRM is a free, open-source, self-hosted CRM built for AI-native workflows.
 - **Lists**: curated collections with list-specific custom attributes
 - **Search**: full-text search across all records
 - **Custom Objects**: create your own entity types beyond People, Companies, and Deals
-- **AI Chat Agent**: talk to your CRM data in plain English via OpenRouter (Claude, GPT-4o, Llama, Gemini)
+- **AI Chat Agent**: talk to your CRM data in plain English, powered directly by Anthropic's Claude API (Sonnet 4, Opus 4, or Haiku 4.5)
 - **CSV Import/Export**: bulk data import with column mapping
 - **Dark & Light Mode**: full theme support
 
@@ -36,7 +34,7 @@ Generate a SKILL.md and config from Settings > FarbenCRM, drop them into your AI
 
 ## Tech Stack
 
-Next.js 15 (App Router), TypeScript, PostgreSQL 16, Drizzle ORM, Better Auth, shadcn/ui, Tailwind CSS v4, TanStack Table, dnd-kit, TipTap, OpenRouter.
+Next.js 15 (App Router), TypeScript, PostgreSQL 16, Drizzle ORM, Better Auth, shadcn/ui, Tailwind CSS v4, TanStack Table, dnd-kit, TipTap, Anthropic Claude API.
 
 ## API
 
@@ -49,5 +47,3 @@ Full REST API at `/api/v1/` with Bearer token authentication (`fc_sk_` prefix).
 ## Self-Hosting
 
 Docker Compose deployment. Clone the repo, configure `.env`, run `docker compose up`. No vendor lock-in, no per-seat pricing, no data leaving your infrastructure.
-
-Detailed setup: https://your-farbencrm-instance.example.com/docs

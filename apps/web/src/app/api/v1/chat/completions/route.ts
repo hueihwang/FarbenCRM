@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     .where(eq(conversations.id, conversationId));
 
   // Build messages for Anthropic
-  const systemPrompt = await buildSystemPrompt(ctx.workspaceId);
+  const systemPrompt = await buildSystemPrompt(ctx.workspaceId, ctx.userId);
   const historyMessages = await buildConversationMessages(conversationId);
 
   // Fire-and-forget title generation on first user message
@@ -101,12 +101,16 @@ async function streamCompletion(
   encoder: TextEncoder,
   depth = 0
 ) {
-  if (depth > 10) {
+  // After MAX_TOOL_ROUNDS of tool calls, force the model to produce a text
+  // answer (tool_choice: "none") instead of spiraling deeper.
+  const MAX_TOOL_ROUNDS = 6;
+  const forceTextOnly = depth >= MAX_TOOL_ROUNDS;
+  if (depth > 12) {
     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: "Too many tool call rounds" })}\n\n`));
     return;
   }
 
-  const res = await callAnthropic(config, systemPrompt, anthropicMessages, true);
+  const res = await callAnthropic(config, systemPrompt, anthropicMessages, true, forceTextOnly ? "none" : "auto");
   if (!res.ok) {
     const errBody = await res.text();
     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: `Anthropic error: ${res.status}` })}\n\n`));
@@ -121,6 +125,8 @@ async function streamCompletion(
   const toolUseBlocks: Array<{ id: string; name: string; inputJson: string }> = [];
   let currentBlockIndex = -1;
   let currentBlockType = "";
+  let streamError: string | null = null;
+  let stopReason: string | null = null;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -157,6 +163,15 @@ async function streamCompletion(
                 name: block.name,
                 inputJson: "",
               });
+            } else if (block?.type === "web_search_tool_use") {
+              // Native web search — Anthropic resolves it server-side; we only
+              // forward a status event so the frontend can show an indicator.
+              currentBlockType = "web_search_tool_use";
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "web_search_start" })}\n\n`)
+              );
+            } else if (block?.type === "web_search_tool_result") {
+              currentBlockType = "web_search_tool_result";
             }
             break;
           }
@@ -178,17 +193,45 @@ async function streamCompletion(
           }
 
           case "content_block_stop":
+            if (currentBlockType === "web_search_tool_result") {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "web_search_done" })}\n\n`)
+              );
+            }
             currentBlockType = "";
+            break;
+
+          case "message_delta":
+            // Contains usage + stop_reason at end of message.
+            if (parsed.delta?.stop_reason) stopReason = parsed.delta.stop_reason;
             break;
 
           case "message_stop":
             // End of message
             break;
+
+          case "error": {
+            // Anthropic streaming error — surface it instead of silently dropping.
+            const msg = parsed.error?.message || parsed.message || "Unknown streaming error";
+            streamError = msg;
+            console.error("[chat] Anthropic stream error:", msg, parsed);
+            break;
+          }
         }
       } catch {
         // Skip malformed lines
       }
     }
+  }
+
+  if (streamError) {
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: streamError })}\n\n`));
+    // Save a visible assistant message so the user isn't left with a dead conversation
+    const errMsg = await saveMessage(conversationId, "assistant", {
+      content: `⚠️ The model returned an error: ${streamError}. Please try again or rephrase your question.`,
+    });
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: errMsg.id })}\n\n`));
+    return;
   }
 
   // Convert tool_use blocks to the internal ToolCall format for storage
@@ -356,8 +399,18 @@ async function streamCompletion(
         encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: msg.id })}\n\n`)
       );
     } else {
+      // Empty response with no error — model produced nothing. Log and surface a visible message
+      // so the UI doesn't just hang on tool bubbles forever.
+      console.error("[chat] Empty assistant response", { depth, stopReason, historyLen: anthropicMessages.length });
+      const fallback = stopReason === "max_tokens"
+        ? "⚠️ Response was cut off (token limit reached). Try asking a more focused question."
+        : "⚠️ The model returned an empty response. This sometimes happens after many tool calls — try rephrasing or starting a fresh conversation.";
+      const msg = await saveMessage(conversationId, "assistant", { content: fallback });
       controller.enqueue(
-        encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: null })}\n\n`)
+        encoder.encode(`data: ${JSON.stringify({ type: "token", content: fallback })}\n\n`)
+      );
+      controller.enqueue(
+        encoder.encode(`data: ${JSON.stringify({ type: "done", messageId: msg.id })}\n\n`)
       );
     }
   }

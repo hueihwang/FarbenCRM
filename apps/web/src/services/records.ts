@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { records, recordValues, attributes, objects } from "@/db/schema";
+import { records, recordValues, attributes, objects, users } from "@/db/schema";
 import { eq, and, inArray, desc, asc, sql, type SQL } from "drizzle-orm";
 import { ATTRIBUTE_TYPE_COLUMN_MAP, type AttributeType } from "@farbencrm/shared";
 import type { FilterGroup, SortConfig } from "@farbencrm/shared";
@@ -94,7 +94,13 @@ function buildValueRow(
 
   switch (column) {
     case "text_value":
-      base.textValue = value as string;
+      // For actor_reference, accept either a raw user-ID string or a hydrated { id }
+      // object (so round-tripping a read-then-write works).
+      if (attrInfo.type === "actor_reference" && value && typeof value === "object" && "id" in (value as Record<string, unknown>)) {
+        base.textValue = String((value as { id: string }).id);
+      } else {
+        base.textValue = value as string;
+      }
       break;
     case "number_value":
       base.numberValue = String(value);
@@ -212,6 +218,26 @@ async function hydrateRecords(
     }
   }
 
+  // Batch-resolve actor_reference IDs (workspace users) to { id, name, email } objects
+  // so the UI can render a person's name instead of a raw user UUID.
+  const actorIds = new Set<string>();
+  for (const v of valueRows) {
+    const attrInfo = byId.get(v.attributeId);
+    if (attrInfo?.type === "actor_reference" && v.textValue) {
+      actorIds.add(v.textValue);
+    }
+  }
+  const actorMap = new Map<string, { id: string; displayName: string; email: string }>();
+  if (actorIds.size > 0) {
+    const actorRows = await db
+      .select({ id: users.id, name: users.name, email: users.email })
+      .from(users)
+      .where(inArray(users.id, [...actorIds]));
+    for (const u of actorRows) {
+      actorMap.set(u.id, { id: u.id, displayName: u.name || u.email, email: u.email });
+    }
+  }
+
   return recordRows.map((rec) => {
     const rowValues = valuesMap.get(rec.id) || [];
     const values: Record<string, unknown> = {};
@@ -228,7 +254,26 @@ async function hydrateRecords(
       const attrInfo = byId.get(attrId);
       if (!attrInfo) continue;
 
-      if (attrInfo.type === "record_reference") {
+      if (attrInfo.type === "actor_reference") {
+        // Resolve user IDs to { id, displayName, email }
+        if (attrInfo.isMultiselect) {
+          values[attrInfo.slug] = rows
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((r) => {
+              const uid = r.textValue;
+              if (!uid) return null;
+              return actorMap.get(uid) ?? { id: uid, displayName: "Unknown user", email: "" };
+            })
+            .filter(Boolean);
+        } else {
+          const uid = rows[0].textValue;
+          if (uid) {
+            values[attrInfo.slug] = actorMap.get(uid) ?? { id: uid, displayName: "Unknown user", email: "" };
+          } else {
+            values[attrInfo.slug] = null;
+          }
+        }
+      } else if (attrInfo.type === "record_reference") {
         // Resolve to { id, displayName, objectSlug } objects
         if (attrInfo.isMultiselect) {
           values[attrInfo.slug] = rows

@@ -216,12 +216,6 @@ export default async function ComparisonPage({
           </span>
           <div className="flex items-center gap-5">
             <Link
-              href="/docs"
-              className="text-[12px] text-muted-foreground/60 transition-colors hover:text-muted-foreground"
-            >
-              Docs
-            </Link>
-            <Link
               href="/blog"
               className="text-[12px] text-muted-foreground/60 transition-colors hover:text-muted-foreground"
             >

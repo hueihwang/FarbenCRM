@@ -67,7 +67,7 @@ Your agent handles this from wherever you already talk to it, alongside whatever
 
 ### Built-in AI Assistant
 
-When you're inside the CRM itself, a built-in AI chat agent has 13 tools (8 read, 5 write) with a confirmation flow before changes. Powered by OpenRouter: choose from Claude, GPT-4o, Llama, Gemini, and others.
+When you're inside the CRM itself, a built-in AI chat agent has 13 tools (8 read, 5 write) with a confirmation flow before changes. Powered directly by Anthropic's Claude API — pick Sonnet 4, Opus 4, or Haiku 4.5 in workspace settings.
 
 Two AI layers: AI agent handles things when you're outside the CRM. The built-in assistant handles things when you're inside it. For a technical deep-dive into both systems, see [Two Ways AI Works in FarbenCRM](/blog/how-we-built-ai-into-crm).
 
@@ -253,7 +253,6 @@ For most open-source CRMs, the answer is "maybe, with work." For FarbenCRM, it's
 
 - [GitHub Repository](https://github.com/your-org/farbencrm)
 - [Live Demo](https://your-farbencrm-instance.example.com)
-- [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 

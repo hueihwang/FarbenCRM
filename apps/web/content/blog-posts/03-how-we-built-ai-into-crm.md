@@ -5,7 +5,7 @@ description: "A technical deep-dive into FarbenCRM's two AI systems: a built-in 
 date: "2026-02-17"
 author: "FarbenCRM Team"
 category: "engineering"
-keywords: ["AI CRM", "AI agent CRM", "AI agent integration", "CRM AI assistant", "tool calling", "LLM agents", "AI assistant", "OpenRouter", "skill file", "agent-native CRM"]
+keywords: ["AI CRM", "AI agent CRM", "AI agent integration", "CRM AI assistant", "tool calling", "LLM agents", "AI assistant", "Anthropic Claude", "skill file", "agent-native CRM"]
 ---
 
 # Two Ways AI Works in FarbenCRM: Built-in Assistant and Agent Integration
@@ -102,7 +102,7 @@ API: /api/v1/chat/completions (POST)
     |
 Build System Prompt (dynamic schema)
     |
-OpenRouter API (Claude, GPT-4o, Llama, etc.)
+Anthropic Messages API (Claude Sonnet 4 / Opus 4 / Haiku)
     |
 Tool Calls (up to 10 rounds)
     |
@@ -229,7 +229,7 @@ let rounds = 0;
 const MAX_ROUNDS = 10;
 
 while (rounds < MAX_ROUNDS) {
-  const response = await callOpenRouter(messages, tools);
+  const response = await callAnthropic(messages, tools);
 
   if (response.finish_reason === "stop") {
     return response.content;
@@ -259,7 +259,7 @@ while (rounds < MAX_ROUNDS) {
 }
 ```
 
-### SSE Streaming and OpenRouter
+### SSE Streaming from Anthropic
 
 Responses stream over Server-Sent Events. Tokens arrive as they're generated, so the UI updates in real time instead of making the user wait for a complete response.
 
@@ -277,7 +277,7 @@ data: {"tool_call":{"id":"call_123","name":"search_records","args":"{\"query\":\
 data: {"tool_result":{"id":"call_123","result":[...]}}
 ```
 
-The assistant uses OpenRouter instead of direct OpenAI or Anthropic APIs. Model flexibility: users choose from Claude, GPT-4o, Llama, Gemini, and 200+ other models. One API integration, every model available. Set an OpenRouter API key and pick a model in workspace settings.
+The assistant calls Anthropic's Messages API directly using the `x-api-key` header and the SSE streaming format. Users pick a Claude model (Sonnet 4, Opus 4, or Haiku 4.5) in workspace settings, paste an Anthropic API key, and they're done.
 
 ## Architecture: AI agent Integration
 
@@ -391,7 +391,7 @@ Same underlying API, different access patterns. The built-in assistant calls ser
 
 **Context window management.** Tool results add up fast. A search returning 50 results burns 10K tokens. Fix: cap results at 10, omit large fields, summarize where possible.
 
-**Streaming + tool calls.** OpenRouter streams tool calls incrementally as partial JSON chunks. You have to buffer deltas and only execute when `finish_reason === "tool_calls"`.
+**Streaming + tool calls.** Anthropic streams tool calls as `content_block_start` / `input_json_delta` / `content_block_stop` events. You have to buffer the partial JSON until the block closes before parsing and executing.
 
 **Schema size in prompts.** For a workspace with 20 custom objects, the dynamic system prompt can hit 5K-10K tokens. Fix: cache aggressively, invalidate only on schema changes.
 
@@ -436,7 +436,7 @@ The skill file system:
 - Generated `SKILL.md`: the skill file itself (around 350 lines of Markdown)
 - `app/api/v1/*`: the 33 REST endpoints the agent calls
 
-External dependencies: OpenRouter API (for the built-in assistant), Drizzle ORM (database), Next.js API routes (for both systems).
+External dependencies: Anthropic's Messages API (for the built-in assistant), Drizzle ORM (database), Next.js API routes (for both systems).
 
 ## Try It
 

@@ -29,37 +29,70 @@ function escapeCSV(value: string): string {
 function formatValue(value: unknown, attr: AttributeDef): string {
   if (value === null || value === undefined) return "";
 
+  // Arrays (multiselect) — format each element, join with "; "
+  if (Array.isArray(value)) {
+    return value
+      .map((v) => formatValue(v, attr))
+      .filter((s) => s.length > 0)
+      .join("; ");
+  }
+
   switch (attr.type) {
     case "personal_name": {
       const pn = value as { fullName?: string; firstName?: string; lastName?: string };
       return pn.fullName ?? [pn.firstName, pn.lastName].filter(Boolean).join(" ");
     }
     case "currency": {
-      const c = value as { amount?: number; currency?: string };
-      if (c.amount !== undefined) return `${c.amount} ${c.currency ?? ""}`.trim();
-      return String(value);
+      const c = value as { amount?: number; currency?: string; currencyCode?: string };
+      if (c.amount !== undefined) {
+        const code = c.currencyCode ?? c.currency ?? "";
+        return `${c.amount} ${code}`.trim();
+      }
+      return "";
     }
     case "location": {
-      const loc = value as { line1?: string; city?: string; state?: string; country?: string };
-      return [loc.line1, loc.city, loc.state, loc.country].filter(Boolean).join(", ");
+      // Tolerate legacy rows saved as a bare string
+      if (typeof value === "string") return value;
+      const loc = value as { line1?: string; city?: string; state?: string; countryCode?: string; country?: string };
+      return [loc.line1, loc.city, loc.state, loc.countryCode ?? loc.country].filter(Boolean).join(", ");
     }
     case "select": {
       const opt = attr.options?.find((o) => o.id === value);
-      return opt?.title ?? String(value);
+      return opt?.title ?? (typeof value === "string" ? value : "");
     }
     case "status": {
       const st = attr.statuses?.find((s) => s.id === value);
-      return st?.title ?? String(value);
+      return st?.title ?? (typeof value === "string" ? value : "");
+    }
+    case "record_reference": {
+      // Hydrated shape: { id, displayName, objectSlug }
+      if (value && typeof value === "object" && "displayName" in (value as Record<string, unknown>)) {
+        return String((value as { displayName?: string }).displayName ?? "");
+      }
+      return typeof value === "string" ? value : "";
+    }
+    case "actor_reference": {
+      // Hydrated shape: { id, displayName, email }
+      if (value && typeof value === "object" && "displayName" in (value as Record<string, unknown>)) {
+        return String((value as { displayName?: string }).displayName ?? "");
+      }
+      return typeof value === "string" ? value : "";
     }
     case "checkbox":
       return value ? "true" : "false";
+    case "date":
+    case "timestamp":
+      return typeof value === "string" ? value : String(value);
     case "interaction": {
       if (typeof value === "object") return JSON.stringify(value);
       return String(value);
     }
     default:
-      if (Array.isArray(value)) {
-        return value.map((v) => formatValue(v, attr)).join("; ");
+      // Safe fallback — avoid [object Object] leaking out
+      if (typeof value === "object") {
+        return String((value as { displayName?: string; name?: string }).displayName
+          ?? (value as { name?: string }).name
+          ?? "");
       }
       return String(value);
   }
@@ -95,6 +128,61 @@ export function downloadCSV(csv: string, filename: string) {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+// ─── Excel Export ────────────────────────────────────────────────────
+
+/**
+ * Generate an .xlsx file from records and trigger a browser download.
+ * Uses write-excel-file so Excel opens the file natively with a proper
+ * header row, frozen header, and auto-sized columns.
+ */
+export async function downloadExcel(
+  records: RecordRow[],
+  attributes: AttributeDef[],
+  filename: string
+): Promise<void> {
+  // Lazy-load so the xlsx writer is not in the initial JS bundle.
+  const { default: writeXlsxFile } = await import("write-excel-file");
+
+  // Header row — bold, grey background so it's clearly distinct from data.
+  const headerRow = attributes.map((a) => ({
+    value: a.title,
+    fontWeight: "bold" as const,
+    backgroundColor: "#F3F4F6",
+    borderColor: "#E5E7EB",
+    alignVertical: "center" as const,
+  }));
+
+  // Data rows
+  const dataRows = records.map((record) =>
+    attributes.map((attr) => {
+      const val = record.values[attr.slug];
+      const text = formatValue(val, attr);
+      return {
+        value: text,
+        alignVertical: "center" as const,
+        wrap: false,
+      };
+    })
+  );
+
+  // Rough auto-size: pick the longest cell in each column (cap between 14 and 60).
+  const columnWidths = attributes.map((attr, colIdx) => {
+    const headerLen = attr.title.length;
+    const maxDataLen = records.reduce((max, r) => {
+      const text = formatValue(r.values[attr.slug], attr);
+      return Math.max(max, text.length);
+    }, 0);
+    const w = Math.min(60, Math.max(14, Math.max(headerLen, maxDataLen) + 2));
+    return { width: w };
+  });
+
+  await writeXlsxFile([headerRow, ...dataRows], {
+    fileName: filename.endsWith(".xlsx") ? filename : `${filename}.xlsx`,
+    columns: columnWidths,
+    stickyRowsCount: 1, // freeze header
+  });
 }
 
 // ─── CSV Import (Parsing) ───────────────────────────────────────────

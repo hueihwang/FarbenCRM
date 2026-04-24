@@ -39,7 +39,7 @@ We tested five Salesforce alternatives built for small teams, covering self-host
 - **Core CRM:** Unlimited contacts, companies, deals, custom objects
 - **17 attribute types:** Text, number, currency, date, select, status, rating, email, phone, location, record references
 - **Kanban boards:** Drag-and-drop deal stages
-- **AI chat agent:** Ask questions in plain English, powered by OpenRouter (Claude, GPT-4o, Llama, Gemini)
+- **AI chat agent:** Ask questions in plain English, powered directly by Anthropic's Claude API (Sonnet 4, Opus 4, or Haiku 4.5)
 - **Full REST API:** 40+ endpoints for integrations
 - **Tasks and notes:** Rich text editor with auto-save, record linking
 - **CSV import/export:** Bulk data management
@@ -437,7 +437,6 @@ The good news? All five have free trials or free plans. Try a few. See what fits
 
 → [GitHub Repository](https://github.com/your-org/farbencrm)
 → [Live Demo](https://your-farbencrm-instance.example.com)
-→ [Documentation](https://your-farbencrm-instance.example.com/docs)
 
 ---
 

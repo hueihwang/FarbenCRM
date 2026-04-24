@@ -4,8 +4,9 @@ import {
   messages,
   workspaces,
   objects,
+  aiMemories,
 } from "@/db/schema";
-import { eq, desc, asc } from "drizzle-orm";
+import { eq, desc, asc, and, ilike, or } from "drizzle-orm";
 import { globalSearch } from "./search";
 import { listObjects, getObjectBySlug, getObjectWithAttributes } from "./objects";
 import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "./records";
@@ -23,7 +24,7 @@ interface AIConfig {
 interface WorkspaceSettings {
   anthropicApiKey?: string;
   anthropicModel?: string;
-  tavilyApiKey?: string;
+  workspaceKnowledge?: string;
 }
 
 export interface ToolHandler {
@@ -84,8 +85,20 @@ export async function getAIConfig(workspaceId: string): Promise<AIConfig | null>
 
 // ─── System Prompt ───────────────────────────────────────────────────
 
-export async function buildSystemPrompt(workspaceId: string): Promise<string> {
+export async function buildSystemPrompt(workspaceId: string, userId: string): Promise<string> {
   const objs = await listObjects(workspaceId);
+
+  // Load workspace-level knowledge (shared across all users)
+  const [ws] = await db
+    .select({ settings: workspaces.settings })
+    .from(workspaces)
+    .where(eq(workspaces.id, workspaceId))
+    .limit(1);
+  const wsSettings = (ws?.settings ?? {}) as WorkspaceSettings;
+  const knowledge = wsSettings.workspaceKnowledge?.trim();
+  const knowledgeBlock = knowledge
+    ? `\n\n## About this organization\nThe following is shared context about the organization, its business, and its conventions. Treat it as authoritative background knowledge when answering questions or drafting content:\n\n${knowledge}\n`
+    : "";
 
   // Build detailed object schema with attributes and status values
   const objectDetails = await Promise.all(
@@ -104,7 +117,10 @@ export async function buildSystemPrompt(workspaceId: string): Promise<string> {
     })
   );
 
-  return `You are an AI assistant for FarbenCRM. You help users manage their CRM data — searching records, creating and updating contacts, companies, deals, tasks, and notes.
+  // Load user-specific memories
+  const memoriesBlock = await loadUserMemories(userId, workspaceId);
+
+  return `You are an AI assistant for FarbenCRM. You help users manage their CRM data — searching records, creating and updating contacts, companies, deals, tasks, and notes.${knowledgeBlock}
 
 Available object types and their attributes:
 ${objectDetails.join("\n")}
@@ -120,8 +136,16 @@ Guidelines:
 - When creating tasks, always provide a clear content description.
 - When creating notes, you need a recordId — search for the record first if needed.
 - Use web_search to look up company info, industry news, prospect research, or any external information.
+- You have a memory system. Use save_memory to remember important facts about the user (their role, preferences, key accounts, goals, workflows). Memories persist across conversations. Proactively save useful context — don't wait to be asked.
+- Use search_memories to recall past context before answering when relevant.
 - Be concise and helpful. Confirm actions before executing writes.
-- If a tool call fails, explain the error to the user and suggest alternatives.`;
+- If a tool call fails, explain the error to the user and suggest alternatives.
+
+CRITICAL — tool usage discipline:
+- Gather data with AT MOST 3-5 tool calls, then write your answer. Do not keep fetching records hoping to be more thorough — the user is waiting for an answer, not a full enumeration.
+- Before calling a tool, ask yourself: "do I already have enough to answer?" If yes, stop and write the response.
+- Never call get_record on every related record. Use the summary info already present in list/search results. Only drill into a record with get_record when the user specifically needs its details.
+- Write your final answer in plain prose with markdown formatting. Do not narrate what you are about to do ("Let me fetch…", "Now I will…") — just do it and then answer.${memoriesBlock}`;
 }
 
 // ─── Tool Definitions ────────────────────────────────────────────────
@@ -324,15 +348,51 @@ export const toolDefinitions = [
   {
     type: "function" as const,
     function: {
-      name: "web_search",
-      description: "Search the web for information about companies, people, industries, news, or any external topic. Useful for researching prospects, verifying company details, finding contact info, or getting market insights.",
+      name: "save_memory",
+      description: "Save an important fact, preference, or insight about the user for future conversations. Use this proactively when you learn something useful — e.g. the user's role, their key accounts, preferred workflows, goals, or important context they share. Memories persist across all conversations.",
       parameters: {
         type: "object",
         properties: {
-          query: { type: "string", description: "Search query" },
-          max_results: { type: "number", description: "Max results to return (default 5, max 10)" },
+          content: { type: "string", description: "The fact or insight to remember (be specific and concise)" },
+          category: {
+            type: "string",
+            description: "Category for the memory",
+            enum: ["preference", "context", "workflow", "account", "goal", "general"],
+          },
         },
-        required: ["query"],
+        required: ["content"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "search_memories",
+      description: "Search your saved memories about this user. Use this to recall past context, preferences, or facts before answering questions or taking actions.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Search term to find relevant memories" },
+          category: {
+            type: "string",
+            description: "Optional category filter",
+            enum: ["preference", "context", "workflow", "account", "goal", "general"],
+          },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "delete_memory",
+      description: "Delete a specific memory by its ID. Use when a user asks you to forget something or when information is outdated.",
+      parameters: {
+        type: "object",
+        properties: {
+          memory_id: { type: "string", description: "Memory UUID to delete" },
+        },
+        required: ["memory_id"],
       },
     },
   },
@@ -345,15 +405,6 @@ async function resolveObjectId(slug: string, workspaceId: string): Promise<strin
   return obj?.id ?? null;
 }
 
-async function getTavilyApiKey(workspaceId: string): Promise<string | null> {
-  const [workspace] = await db
-    .select({ settings: workspaces.settings })
-    .from(workspaces)
-    .where(eq(workspaces.id, workspaceId))
-    .limit(1);
-  const settings = (workspace?.settings ?? {}) as WorkspaceSettings;
-  return settings.tavilyApiKey || process.env.TAVILY_API_KEY || null;
-}
 
 export const toolHandlers: Record<string, ToolHandler> = {
   search_records: {
@@ -502,44 +553,131 @@ export const toolHandlers: Record<string, ToolHandler> = {
     },
   },
 
-  web_search: {
+  save_memory: {
     requiresConfirmation: false,
     async execute(args, ctx) {
-      const tavilyKey = await getTavilyApiKey(ctx.workspaceId);
-      if (!tavilyKey) {
-        return { error: "Web search not configured. Set your Tavily API key in Settings > AI Agent." };
+      const content = (args.content as string).trim();
+      if (!content) return { error: "Memory content cannot be empty" };
+
+      const category = (args.category as string) || "general";
+
+      const [memory] = await db
+        .insert(aiMemories)
+        .values({
+          workspaceId: ctx.workspaceId,
+          userId: ctx.userId,
+          content,
+          category,
+        })
+        .returning();
+
+      return { saved: true, id: memory.id, content, category };
+    },
+  },
+
+  search_memories: {
+    requiresConfirmation: false,
+    async execute(args, ctx) {
+      const query = (args.query as string || "").trim();
+      const category = args.category as string | undefined;
+
+      const conditions = [
+        eq(aiMemories.userId, ctx.userId),
+        eq(aiMemories.workspaceId, ctx.workspaceId),
+      ];
+
+      if (category) {
+        conditions.push(eq(aiMemories.category, category));
       }
 
-      const maxResults = Math.min((args.max_results as number) || 5, 10);
-
-      const res = await fetch("https://api.tavily.com/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          api_key: tavilyKey,
-          query: args.query as string,
-          max_results: maxResults,
-          include_answer: true,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.text();
-        return { error: `Search failed: ${res.status}` };
+      let rows;
+      if (query) {
+        // Search by keyword match across content
+        const keywords = query.split(/\s+/).filter(Boolean);
+        const contentFilters = keywords.map((kw) => ilike(aiMemories.content, `%${kw}%`));
+        rows = await db
+          .select()
+          .from(aiMemories)
+          .where(and(...conditions, or(...contentFilters)))
+          .orderBy(desc(aiMemories.updatedAt))
+          .limit(20);
+      } else {
+        // Return all memories
+        rows = await db
+          .select()
+          .from(aiMemories)
+          .where(and(...conditions))
+          .orderBy(desc(aiMemories.updatedAt))
+          .limit(20);
       }
 
-      const data = await res.json();
       return {
-        answer: data.answer || null,
-        results: (data.results || []).map((r: any) => ({
-          title: r.title,
-          url: r.url,
-          content: r.content,
+        memories: rows.map((m) => ({
+          id: m.id,
+          content: m.content,
+          category: m.category,
+          createdAt: m.createdAt,
         })),
+        count: rows.length,
       };
     },
   },
+
+  delete_memory: {
+    requiresConfirmation: true,
+    async execute(args, ctx) {
+      const memoryId = args.memory_id as string;
+      const [deleted] = await db
+        .delete(aiMemories)
+        .where(
+          and(
+            eq(aiMemories.id, memoryId),
+            eq(aiMemories.userId, ctx.userId),
+            eq(aiMemories.workspaceId, ctx.workspaceId),
+          )
+        )
+        .returning();
+
+      if (!deleted) return { error: "Memory not found" };
+      return { deleted: true, id: memoryId };
+    },
+  },
 };
+
+// ─── Memory Loader ──────────────────────────────────────────────────
+
+export async function loadUserMemories(userId: string, workspaceId: string): Promise<string> {
+  const rows = await db
+    .select()
+    .from(aiMemories)
+    .where(
+      and(
+        eq(aiMemories.userId, userId),
+        eq(aiMemories.workspaceId, workspaceId),
+      )
+    )
+    .orderBy(desc(aiMemories.updatedAt))
+    .limit(50);
+
+  if (rows.length === 0) return "";
+
+  const grouped: Record<string, string[]> = {};
+  for (const m of rows) {
+    const cat = m.category || "general";
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(m.content);
+  }
+
+  let memoryBlock = "\n\nYour memories about this user:";
+  for (const [cat, items] of Object.entries(grouped)) {
+    memoryBlock += `\n[${cat}]`;
+    for (const item of items) {
+      memoryBlock += `\n- ${item}`;
+    }
+  }
+
+  return memoryBlock;
+}
 
 // ─── Message Helpers ─────────────────────────────────────────────────
 
@@ -680,7 +818,7 @@ export async function createConversation(
       userId,
       workspaceId,
       title: opts.title || "New conversation",
-      model: opts.model || "anthropic/claude-sonnet-4",
+      model: opts.model || "claude-sonnet-4-20250514",
     })
     .returning();
 
@@ -750,22 +888,45 @@ export async function callAnthropic(
   config: AIConfig,
   systemPrompt: string,
   messages: AnthropicMessage[],
-  stream = true
+  stream = true,
+  /** When "none", the model must emit text only — no more tool calls. Use this
+   *  to force a final summary after the tool-round cap is hit. */
+  toolChoice: "auto" | "none" = "auto"
 ) {
+  // Native Anthropic web search — resolved server-side, no execution handler
+  // needed. Only injected for Claude models (OpenRouter/other gateways don't
+  // forward Anthropic beta features).
+  const isAnthropicModel = config.model.startsWith("claude-");
+  const nativeWebSearch = {
+    type: "web_search_20250305" as const,
+    name: "web_search",
+  };
+  const tools = isAnthropicModel
+    ? [nativeWebSearch, ...toAnthropicTools()]
+    : toAnthropicTools();
+
+  const body: Record<string, unknown> = {
+    model: config.model,
+    max_tokens: 4096,
+    system: systemPrompt,
+    messages,
+    tools,
+    stream,
+    tool_choice: toolChoice === "none"
+      ? { type: "none" as const }
+      : { type: "auto" as const },
+  };
+  const headers: Record<string, string> = {
+    "x-api-key": config.apiKey,
+    "content-type": "application/json",
+    "anthropic-version": "2023-06-01",
+  };
+  if (isAnthropicModel) {
+    headers["anthropic-beta"] = "web-search-2025-03-05";
+  }
   return fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: {
-      "x-api-key": config.apiKey,
-      "content-type": "application/json",
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: config.model,
-      max_tokens: 4096,
-      system: systemPrompt,
-      messages,
-      tools: toAnthropicTools(),
-      stream,
-    }),
+    headers,
+    body: JSON.stringify(body),
   });
 }

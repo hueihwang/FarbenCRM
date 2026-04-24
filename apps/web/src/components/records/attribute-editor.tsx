@@ -65,6 +65,17 @@ export function AttributeEditor({
       return <RecordReferenceEditor value={refVal} onSave={onSave} onCancel={onCancel} />;
     }
 
+    case "location":
+      return <LocationEditor value={value as LocationValue} onSave={onSave} onCancel={onCancel} />;
+
+    case "actor_reference": {
+      // Value may be a hydrated { id, displayName } object or a raw user-ID string
+      const actorId = value && typeof value === "object" && "id" in (value as Record<string, unknown>)
+        ? (value as { id: string }).id
+        : (value as string | null);
+      return <ActorReferenceEditor value={actorId} onSave={onSave} onCancel={onCancel} />;
+    }
+
     default:
       return <TextEditor value={String(value ?? "")} onSave={onSave} onCancel={onCancel} />;
   }
@@ -451,6 +462,226 @@ function RecordReferenceEditor({ value, onSave, onCancel }: {
             {value === rec.recordId && <Check className="ml-auto h-3.5 w-3.5" />}
           </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Location editor ─────────────────────────────────────────────────
+
+export interface LocationValue {
+  line1?: string;
+  city?: string;
+  state?: string;
+  countryCode?: string;
+  postcode?: string;
+}
+
+function LocationEditor({ value, onSave, onCancel }: {
+  value: LocationValue | null | undefined;
+  onSave: (v: unknown) => void;
+  onCancel: () => void;
+}) {
+  const [city, setCity] = useState(value?.city ?? "");
+  const [state, setState] = useState(value?.state ?? "");
+  const [countryCode, setCountryCode] = useState(value?.countryCode ?? "");
+  const [line1, setLine1] = useState(value?.line1 ?? "");
+  const [postcode, setPostcode] = useState(value?.postcode ?? "");
+  const cityRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { cityRef.current?.focus(); cityRef.current?.select(); }, []);
+
+  const save = useCallback(() => {
+    const v: LocationValue = {};
+    if (line1.trim()) v.line1 = line1.trim();
+    if (city.trim()) v.city = city.trim();
+    if (state.trim()) v.state = state.trim();
+    if (countryCode.trim()) v.countryCode = countryCode.trim().toUpperCase().slice(0, 2);
+    if (postcode.trim()) v.postcode = postcode.trim();
+    // If every field is empty, clear the value
+    onSave(Object.keys(v).length === 0 ? null : v);
+  }, [line1, city, state, countryCode, postcode, onSave]);
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); save(); }
+    if (e.key === "Escape") { e.preventDefault(); onCancel(); }
+  };
+
+  return (
+    <div
+      className="absolute z-50 top-0 left-0 min-w-[320px] rounded-md border border-border bg-popover p-2 shadow-lg space-y-1.5"
+      onKeyDown={handleKey}
+    >
+      <Input
+        ref={cityRef}
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+        placeholder="City"
+        className="h-8 text-sm"
+      />
+      <div className="flex gap-1.5">
+        <Input
+          value={state}
+          onChange={(e) => setState(e.target.value)}
+          placeholder="State / region"
+          className="h-8 text-sm flex-1"
+        />
+        <Input
+          value={countryCode}
+          onChange={(e) => setCountryCode(e.target.value.toUpperCase().slice(0, 2))}
+          placeholder="MY"
+          maxLength={2}
+          className="h-8 text-sm w-16 uppercase"
+        />
+      </div>
+      <Input
+        value={line1}
+        onChange={(e) => setLine1(e.target.value)}
+        placeholder="Street (optional)"
+        className="h-8 text-sm"
+      />
+      <Input
+        value={postcode}
+        onChange={(e) => setPostcode(e.target.value)}
+        placeholder="Postcode (optional)"
+        className="h-8 text-sm"
+      />
+      <div className="flex gap-1.5 justify-end pt-1">
+        <button
+          onClick={onCancel}
+          className="text-xs px-2 py-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={save}
+          className="text-xs px-2 py-1 rounded bg-foreground text-background hover:opacity-90"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Actor reference editor (workspace user dropdown) ────────────────
+
+interface WorkspaceMember {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  role: string;
+}
+
+function ActorReferenceEditor({ value, onSave, onCancel }: {
+  value: string | null;
+  onSave: (v: unknown) => void;
+  onCancel: () => void;
+}) {
+  const [members, setMembers] = useState<WorkspaceMember[]>([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    fetch("/api/v1/workspace-members")
+      .then((r) => r.json())
+      .then((d) => setMembers(d.data ?? []))
+      .catch(() => setMembers([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = members.filter((m) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      (m.userName ?? "").toLowerCase().includes(q) ||
+      (m.userEmail ?? "").toLowerCase().includes(q)
+    );
+  });
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") { e.preventDefault(); onCancel(); }
+  };
+
+  return (
+    <div
+      className="absolute z-50 top-0 left-0 min-w-[260px] rounded-md border border-border bg-popover shadow-lg"
+      onKeyDown={handleKey}
+    >
+      <div className="p-1.5 border-b border-border">
+        <Input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search team members..."
+          className="h-8 text-sm"
+        />
+      </div>
+      <div className="max-h-64 overflow-y-auto p-1">
+        {loading && (
+          <div className="px-2 py-2 text-xs text-muted-foreground">Loading team…</div>
+        )}
+        {!loading && (
+          <>
+            {/* Unassign option */}
+            <button
+              onMouseDown={(e) => { e.preventDefault(); onSave(null); }}
+              className={cn(
+                "flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-left hover:bg-accent",
+                !value && "bg-accent/50"
+              )}
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 text-muted-foreground">
+                <span className="text-[10px]">×</span>
+              </span>
+              <span className="text-muted-foreground">Unassigned</span>
+            </button>
+
+            {filtered.length === 0 && !loading && (
+              <div className="px-2 py-2 text-xs text-muted-foreground">
+                {query ? "No members match" : "No team members"}
+              </div>
+            )}
+
+            {filtered.map((m) => {
+              const selected = m.userId === value;
+              const name = m.userName || m.userEmail;
+              return (
+                <button
+                  key={m.userId}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    // Save the full hydrated shape so the optimistic UI update
+                    // matches what the server returns on the next fetch. The
+                    // server's writeValues() extracts .id when persisting.
+                    onSave({
+                      id: m.userId,
+                      displayName: name,
+                      email: m.userEmail,
+                    });
+                  }}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-left hover:bg-accent",
+                    selected && "bg-accent/50"
+                  )}
+                >
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary shrink-0">
+                    {(name || "?").charAt(0).toUpperCase()}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="truncate">{name}</div>
+                    {m.userName && m.userEmail && m.userName !== m.userEmail && (
+                      <div className="truncate text-[11px] text-muted-foreground">{m.userEmail}</div>
+                    )}
+                  </div>
+                  {selected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                </button>
+              );
+            })}
+          </>
+        )}
       </div>
     </div>
   );

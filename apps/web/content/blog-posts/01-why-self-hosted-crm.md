@@ -86,7 +86,7 @@ Cloud CRMs are starting to charge for AI and automation features separately:
 - Salesforce charges for Einstein AI as an add-on
 - Attio's automation features are gated behind paid plans
 
-With a self-hosted CRM, your agent integration costs nothing extra. You bring your own AI model (through OpenRouter or any provider), and the CRM's API is fully available on every deployment. No premium tier. No automation add-on.
+With a self-hosted CRM, your agent integration costs nothing extra. You bring your own AI model (Anthropic's Claude API, or any provider you wire in), and the CRM's API is fully available on every deployment. No premium tier. No automation add-on.
 
 ### 5-Year Total Cost of Ownership (10-Person Team)
 
@@ -94,7 +94,7 @@ With a self-hosted CRM, your agent integration costs nothing extra. You bring yo
 
 **Attio Pro**: $35,400
 
-**FarbenCRM (self-hosted on a $20/month VPS)**: $2,475 (including optional OpenRouter credits at $20/month for the built-in AI assistant)
+**FarbenCRM (self-hosted on a $20/month VPS)**: $2,475 (including optional Anthropic API credits at $20/month for the built-in AI assistant)
 
 The savings over HubSpot across five years: $53,025. Even hiring a developer for $3,000 to set up and customize the deployment leaves you $50,000 ahead.
 
@@ -200,7 +200,7 @@ The agent integration with AI agent is the primary differentiator, but FarbenCRM
 - Ask questions in plain English: "Which companies in Austin haven't been contacted in 60 days?"
 - The assistant queries your data and returns real answers
 - It can take actions (create contacts, update deals, complete tasks) with your confirmation
-- Powered by OpenRouter, so you choose the model: Claude, GPT-4o, Llama, Gemini, and others
+- Powered by Anthropic's Claude API — pick Sonnet 4, Opus 4, or Haiku 4.5 from workspace settings
 
 Think of it this way: your AI agent handles what you need when you're not in the CRM. The built-in assistant handles what you need when you are.
 
@@ -269,7 +269,7 @@ Your AI agent needed a CRM. We built one.
 
 **Ready to try it?**
 
-[FarbenCRM on GitHub](https://github.com/your-org/farbencrm) | [Live Demo](https://your-farbencrm-instance.example.com) | [Documentation](https://your-farbencrm-instance.example.com/docs)
+[FarbenCRM on GitHub](https://github.com/your-org/farbencrm) | [Live Demo](https://your-farbencrm-instance.example.com)
 
 ---
 

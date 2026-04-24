@@ -94,7 +94,7 @@ This allows unlimited custom attributes without schema migrations.
 
 ### AI Chat Agent
 - Built-in conversational AI assistant
-- Powered by OpenRouter (supports Claude, GPT-4o, Llama, and more)
+- Powered directly by Anthropic's Claude API (Sonnet 4, Opus 4, or Haiku 4.5)
 - Streaming responses via SSE
 - 8 read tools (auto-execute): search_records, get_record, list_objects, list_records, get_record_details, list_tasks, list_notes, get_workspace_info
 - 5 write tools (require user confirmation): create_record, update_record, delete_record, create_task, create_note
@@ -149,7 +149,7 @@ This allows unlimited custom attributes without schema migrations.
 - /settings:General workspace settings
 - /settings/members:Team member management
 - /settings/api-keys:API key management
-- /settings/ai:OpenRouter API key + model configuration
+- /settings/ai:Anthropic API key + Claude model configuration
 
 ## Authentication
 
