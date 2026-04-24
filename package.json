@@ -1,7 +1,7 @@
 {
   "name": "farbencrm",
   "private": true,
-  "author": "hueihwang",
+  "author": "Farben Technique",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",

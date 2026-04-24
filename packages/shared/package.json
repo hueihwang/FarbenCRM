@@ -2,7 +2,7 @@
   "name": "@farbencrm/shared",
   "version": "0.0.1",
   "private": true,
-  "author": "hueihwang",
+  "author": "Farben Technique",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
