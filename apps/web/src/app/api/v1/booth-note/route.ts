@@ -108,6 +108,7 @@ export async function POST(req: NextRequest) {
         { name: body.company.name!.trim() },
         ctx.userId
       );
+      if (!created) throw new Error("Failed to create company record");
       companyId = created.id;
     }
 
@@ -141,6 +142,7 @@ export async function POST(req: NextRequest) {
           },
           ctx.userId
         );
+        if (!created) throw new Error("Failed to create person record");
         personId = created.id;
       }
     }
