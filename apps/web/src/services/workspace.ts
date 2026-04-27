@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { workspaces, workspaceMembers, users, objects, attributes, statuses } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { asc, eq, and } from "drizzle-orm";
 import { STANDARD_OBJECTS, DEAL_STAGES } from "@farbencrm/shared";
 
 // ─── Workspace ───────────────────────────────────────────────────────
@@ -69,6 +69,56 @@ export async function createWorkspace(name: string, userId: string) {
   await seedWorkspaceObjects(workspace.id);
 
   return workspace;
+}
+
+/**
+ * Join a newly-registered user to the default workspace (the oldest one
+ * in the system) as a member. Idempotent: if the user already has any
+ * workspace membership, returns that workspace without changes.
+ *
+ * This implements the "single-tenant FarbenCRM" behaviour — every new
+ * user lands in the same shared workspace instead of getting their own
+ * personal one. Returns null when no workspaces exist anywhere yet
+ * (caller should redirect to the create-workspace flow).
+ */
+export async function joinDefaultWorkspace(userId: string) {
+  // If the user already belongs to a workspace, prefer the oldest of those.
+  const existing = await db
+    .select({
+      id: workspaces.id,
+      name: workspaces.name,
+      slug: workspaces.slug,
+      createdAt: workspaces.createdAt,
+    })
+    .from(workspaceMembers)
+    .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
+    .where(eq(workspaceMembers.userId, userId))
+    .orderBy(asc(workspaces.createdAt))
+    .limit(1);
+
+  if (existing.length > 0) return existing[0];
+
+  // Find the oldest workspace in the system — that's our default.
+  const [defaultWs] = await db
+    .select({
+      id: workspaces.id,
+      name: workspaces.name,
+      slug: workspaces.slug,
+      createdAt: workspaces.createdAt,
+    })
+    .from(workspaces)
+    .orderBy(asc(workspaces.createdAt))
+    .limit(1);
+
+  if (!defaultWs) return null;
+
+  await db.insert(workspaceMembers).values({
+    workspaceId: defaultWs.id,
+    userId,
+    role: "member",
+  });
+
+  return defaultWs;
 }
 
 /** List all workspaces a user is a member of */

@@ -11,7 +11,6 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [workspaceName, setWorkspaceName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -38,21 +37,25 @@ export default function RegisterPage() {
         return;
       }
 
-      // Create workspace for the new user
-      const wsName = workspaceName.trim() || `${name}'s Workspace`;
-      const wsRes = await fetch("/api/v1/workspaces", {
+      // Add the new user to the default (shared) workspace. FarbenCRM is
+      // single-tenant in this deployment — every user lands in the same
+      // workspace instead of getting their own.
+      const joinRes = await fetch("/api/v1/auth/post-signup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: wsName }),
       });
 
-      if (!wsRes.ok) {
-        // User was created but workspace creation failed — send to workspace selection
+      if (!joinRes.ok) {
+        // No workspace exists yet → very first user must create one.
+        // 409 = "no default workspace" (see post-signup endpoint).
+        if (joinRes.status === 409) {
+          router.push("/select-workspace?create=true");
+          return;
+        }
         router.push("/select-workspace");
         return;
       }
 
-      // Cookie is set by the POST /api/v1/workspaces response, redirect to home
+      // Cookie is set by the post-signup response, redirect to home.
       trackEvent("signup_completed");
       router.push("/home");
     } catch {
@@ -125,23 +128,6 @@ export default function RegisterPage() {
             minLength={8}
             className={inputClass}
           />
-        </div>
-        <div className="space-y-1.5">
-          <label
-            htmlFor="workspace-name"
-            className="text-label text-muted-foreground"
-          >
-            Workspace name
-          </label>
-          <input
-            id="workspace-name"
-            type="text"
-            placeholder={name ? `${name}'s Workspace` : "My Workspace"}
-            value={workspaceName}
-            onChange={(e) => setWorkspaceName(e.target.value)}
-            className={inputClass}
-          />
-          <p className="text-caption">Leave blank to use your name</p>
         </div>
         <button
           type="submit"
