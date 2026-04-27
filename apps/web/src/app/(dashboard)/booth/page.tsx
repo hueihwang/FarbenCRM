@@ -24,7 +24,12 @@ interface SearchHit {
 interface ListOption {
   id: string;
   name: string;
-  objectName: string;
+  objectSlug: string;
+}
+
+interface MemberOption {
+  userId: string;
+  userName: string;
 }
 
 interface CompanyChoice {
@@ -47,6 +52,7 @@ export default function BoothPage() {
   // Context (set once per session, persists across captures)
   const [lists, setLists] = useState<ListOption[]>([]);
   const [listId, setListId] = useState<string>(""); // "" = no event
+  const [members, setMembers] = useState<MemberOption[]>([]);
   const [capturedBy, setCapturedBy] = useState<string>("");
 
   // Per-capture
@@ -105,9 +111,25 @@ export default function BoothPage() {
       .then((res) => res.json())
       .then((body) => {
         const items: ListOption[] = (body?.data ?? []).filter(
-          (l: ListOption) => l.objectName === "People"
+          (l: ListOption) => l.objectSlug === "people"
         );
         setLists(items);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch workspace members for the Captured-by dropdown.
+  useEffect(() => {
+    fetch("/api/v1/workspace-members")
+      .then((res) => res.json())
+      .then((body) => {
+        const items: MemberOption[] = (body?.data ?? []).map(
+          (m: { userId: string; userName: string | null }) => ({
+            userId: m.userId,
+            userName: m.userName ?? "(unnamed)",
+          })
+        );
+        setMembers(items);
       })
       .catch(() => {});
   }, []);
@@ -244,11 +266,26 @@ export default function BoothPage() {
           <Label className="text-xs uppercase tracking-wide text-muted-foreground">
             Captured by
           </Label>
-          <Input
+          <select
             value={capturedBy}
             onChange={(e) => setCapturedBy(e.target.value)}
-            placeholder="Your name"
-          />
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {members.length === 0 && (
+              <option value="">— Loading users… —</option>
+            )}
+            {/* If the stored name isn't a current workspace member (e.g.
+                stale localStorage from a previous staff member), surface
+                it so the user can see and re-pick. */}
+            {capturedBy && !members.some((m) => m.userName === capturedBy) && (
+              <option value={capturedBy}>{capturedBy}</option>
+            )}
+            {members.map((m) => (
+              <option key={m.userId} value={m.userName}>
+                {m.userName}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
