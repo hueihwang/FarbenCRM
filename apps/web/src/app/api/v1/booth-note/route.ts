@@ -16,6 +16,7 @@ import { getAuthContext, unauthorized, badRequest, success } from "@/lib/api-uti
 import { getObjectBySlug } from "@/services/objects";
 import { createRecord, updateRecord } from "@/services/records";
 import { createNote } from "@/services/notes";
+import { getList, addListEntry } from "@/services/lists";
 import { db } from "@/db";
 import { attributes, selectOptions } from "@/db/schema/objects";
 
@@ -34,6 +35,12 @@ interface BoothNoteBody {
   noteTitle?: string;
   noteContent: string;
   urgency?: Urgency;
+  /** Optional List ID — if set, the Person is added to this List and the
+   *  note title is prefixed with the list name (e.g. "[IRGCE 2026]"). */
+  listId?: string;
+  /** Optional override for who took the note. Useful when booth staff
+   *  share an iPad logged in as one user but multiple people use it. */
+  capturedBy?: string;
 }
 
 /** Plain text → minimal TipTap JSON document, so the existing rich-text
@@ -48,6 +55,21 @@ function textToTipTap(text: string) {
         content: line ? [{ type: "text", text: line }] : [],
       })),
   };
+}
+
+/** Append a "Captured by …" trailer to the note content if a name is given.
+ *  We bake this into the body (rather than a separate column) so it shows up
+ *  natively in every Notes UI that already exists, without schema work. */
+function buildNoteContent(noteText: string, capturedBy?: string, eventTag?: string) {
+  const lines = [noteText.trim()];
+  const trailer: string[] = [];
+  if (eventTag) trailer.push(`Event: ${eventTag}`);
+  if (capturedBy) trailer.push(`Captured by: ${capturedBy}`);
+  if (trailer.length) {
+    lines.push("");
+    lines.push("— " + trailer.join(" · "));
+  }
+  return textToTipTap(lines.join("\n"));
 }
 
 async function lookupUrgencyOptionId(
@@ -160,12 +182,30 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. Note — attach to person if we have one, else to company
+    // 4. List membership — only if a person was identified/created and a list
+    //    was specified. The list scopes notes by event ("IRGCE 2026 Leads")
+    //    so booth notes for any given event are filterable in one click.
+    let listName: string | undefined;
+    if (body.listId && personId) {
+      const list = await getList(body.listId);
+      if (!list) {
+        return badRequest(`List ${body.listId} not found`);
+      }
+      listName = list.name;
+      await addListEntry(body.listId, personId, ctx.userId);
+    }
+
+    // 5. Note — attach to person if we have one, else to company.
+    //    Title is prefixed with the list/event so it's scannable in the
+    //    Notes index. Content carries the "captured by" trailer.
     const noteRecordId = personId ?? companyId;
+    const baseTitle = body.noteTitle?.trim() || "Booth note";
+    const titleWithEvent = listName ? `[${listName}] ${baseTitle}` : baseTitle;
+
     const note = await createNote(
       noteRecordId,
-      body.noteTitle?.trim() || "Booth note",
-      textToTipTap(body.noteContent.trim()),
+      titleWithEvent,
+      buildNoteContent(body.noteContent, body.capturedBy?.trim(), listName),
       ctx.userId
     );
 
@@ -174,6 +214,7 @@ export async function POST(req: NextRequest) {
         companyId,
         personId,
         noteId: note.id,
+        listName,
       },
       201
     );

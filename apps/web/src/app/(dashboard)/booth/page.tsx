@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -18,6 +19,12 @@ interface SearchHit {
   title: string;
   subtitle: string;
   objectSlug?: string;
+}
+
+interface ListOption {
+  id: string;
+  name: string;
+  objectName: string;
 }
 
 interface CompanyChoice {
@@ -35,7 +42,14 @@ const URGENCIES: { value: Urgency; label: string; tone: string }[] = [
 
 export default function BoothPage() {
   const router = useRouter();
+  const { data: session } = useSession();
 
+  // Context (set once per session, persists across captures)
+  const [lists, setLists] = useState<ListOption[]>([]);
+  const [listId, setListId] = useState<string>(""); // "" = no event
+  const [capturedBy, setCapturedBy] = useState<string>("");
+
+  // Per-capture
   const [company, setCompany] = useState<CompanyChoice | null>(null);
   const [companyQuery, setCompanyQuery] = useState("");
   const [companyHits, setCompanyHits] = useState<SearchHit[]>([]);
@@ -56,6 +70,47 @@ export default function BoothPage() {
   const [error, setError] = useState<string | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Default "Captured by" to logged-in user. localStorage override wins so
+  // that an iPad with a shared login can be set to the actual staff name
+  // and it sticks across reloads.
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? window.localStorage.getItem("booth:captured-by") : null;
+    if (stored) setCapturedBy(stored);
+    else if (session?.user?.name) setCapturedBy(session.user.name);
+  }, [session]);
+
+  // Persist the "Captured by" override
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (capturedBy) window.localStorage.setItem("booth:captured-by", capturedBy);
+  }, [capturedBy]);
+
+  // Default "Event" to localStorage choice (sticks across reloads)
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? window.localStorage.getItem("booth:list-id") : null;
+    if (stored) setListId(stored);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (listId) window.localStorage.setItem("booth:list-id", listId);
+    else window.localStorage.removeItem("booth:list-id");
+  }, [listId]);
+
+  // Fetch lists for the Event picker — only People-object lists, since we
+  // add Person records to whichever list is selected.
+  useEffect(() => {
+    fetch("/api/v1/lists")
+      .then((res) => res.json())
+      .then((body) => {
+        const items: ListOption[] = (body?.data ?? []).filter(
+          (l: ListOption) => l.objectName === "People"
+        );
+        setLists(items);
+      })
+      .catch(() => {});
+  }, []);
 
   // Debounced company search
   useEffect(() => {
@@ -127,15 +182,17 @@ export default function BoothPage() {
             : undefined,
           noteContent: noteContent.trim(),
           urgency: urgency ?? undefined,
+          listId: listId || undefined,
+          capturedBy: capturedBy.trim() || undefined,
         }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error?.message ?? `HTTP ${res.status}`);
       }
-      // Reset for next capture; keep nothing — every visitor is independent.
       setSavedFlash(`Saved — ${company.name}`);
       setTimeout(() => setSavedFlash(null), 1800);
+      // Reset per-capture state. Keep Event + Captured by for the session.
       clearCompany();
       setFirstName("");
       setLastName("");
@@ -152,6 +209,7 @@ export default function BoothPage() {
   }
 
   const canSubmit = !!company && !!noteContent.trim() && !submitting;
+  const activeList = lists.find((l) => l.id === listId);
 
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-5">
@@ -161,6 +219,37 @@ export default function BoothPage() {
           One screen to log a meeting. Creates Company + Person + Note in one
           action.
         </p>
+      </div>
+
+      {/* Session context — set once, persists across captures via localStorage */}
+      <div className="rounded-lg border bg-muted/30 p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+            Event / context
+          </Label>
+          <select
+            value={listId}
+            onChange={(e) => setListId(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="">— No event (general conversation) —</option>
+            {lists.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+            Captured by
+          </Label>
+          <Input
+            value={capturedBy}
+            onChange={(e) => setCapturedBy(e.target.value)}
+            placeholder="Your name"
+          />
+        </div>
       </div>
 
       {savedFlash && (
@@ -318,6 +407,18 @@ export default function BoothPage() {
             />
           </Field>
         </Section>
+
+        {activeList && (
+          <p className="text-xs text-muted-foreground">
+            This note will be tagged <strong>[{activeList.name}]</strong>
+            {capturedBy && (
+              <>
+                {" "}and saved as captured by <strong>{capturedBy}</strong>
+              </>
+            )}
+            .
+          </p>
+        )}
 
         <div className="flex items-center gap-2 pt-2">
           <Button type="submit" disabled={!canSubmit} className="flex-1">
