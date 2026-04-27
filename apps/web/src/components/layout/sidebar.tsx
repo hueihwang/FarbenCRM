@@ -22,6 +22,7 @@ import {
   Sun,
   Moon,
   BarChart2,
+  Zap,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,6 +35,7 @@ import { useTheme } from "next-themes";
 
 const mainNav = [
   { href: "/home", label: "Home", icon: Home },
+  { href: "/booth", label: "Booth note", icon: Zap },
   { href: "/chat", label: "Chat", icon: MessageSquare },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/notes", label: "Notes", icon: StickyNote },
