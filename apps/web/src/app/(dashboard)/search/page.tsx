@@ -94,7 +94,7 @@ function SearchContent() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-semibold mb-6">Search</h1>
 
       <form onSubmit={handleSubmit} className="mb-8">
@@ -178,7 +178,7 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 max-w-4xl mx-auto">
+        <div className="p-4 sm:p-6 max-w-4xl mx-auto">
           <h1 className="text-2xl font-semibold mb-6">Search</h1>
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

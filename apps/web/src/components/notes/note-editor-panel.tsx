@@ -263,7 +263,7 @@ export function NoteEditorPanel({
         </div>
 
         {/* Note content */}
-        <div className="flex-1 overflow-auto px-12 py-6">
+        <div className="flex-1 overflow-auto px-4 sm:px-12 py-4 sm:py-6">
           {!ready ? (
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : (

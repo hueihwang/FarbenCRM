@@ -367,8 +367,8 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-full">
-      {/* Conversation sidebar */}
-      <div className="w-60 border-r border-border bg-muted/30 shrink-0">
+      {/* Conversation sidebar — hidden on mobile, shown md+ */}
+      <div className="hidden md:block w-60 border-r border-border bg-muted/30 shrink-0">
         <ConversationList
           conversations={conversations}
           activeId={activeConvId}

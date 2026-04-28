@@ -208,7 +208,8 @@ export default function ObjectSettingsPage() {
                   ) : (
                     <>
                       {/* Attributes table */}
-                      <table className="w-full text-sm">
+                      <div className="overflow-x-auto">
+                      <table className="w-full text-sm min-w-[600px]">
                         <thead>
                           <tr className="border-b bg-muted/30">
                             <th className="px-4 py-2 text-left font-medium">
@@ -279,6 +280,7 @@ export default function ObjectSettingsPage() {
                           )}
                         </tbody>
                       </table>
+                      </div>
 
                       {/* Add attribute form */}
                       <div className="flex items-end gap-2 border-t border-border px-4 py-3 bg-muted/20">
