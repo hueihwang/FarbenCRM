@@ -198,7 +198,16 @@ export function NoteEditorPanel({
         if (!isOpen) handleClose();
       }}
     >
-      <DialogContent className="sm:max-w-2xl p-0 gap-0 max-h-[85vh] flex flex-col">
+      <DialogContent
+        className={cn(
+          // Shared
+          "p-0 gap-0 flex flex-col",
+          // Mobile: full-screen takeover for actual writing space
+          "inset-0 max-w-none w-screen h-screen max-h-screen rounded-none translate-x-0 translate-y-0 left-0 top-0",
+          // sm+: original card-style centered modal
+          "sm:inset-auto sm:max-w-2xl sm:w-full sm:h-auto sm:max-h-[85vh] sm:rounded-2xl sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]"
+        )}
+      >
         {/* Title bar */}
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
           <div
