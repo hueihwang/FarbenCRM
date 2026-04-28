@@ -151,7 +151,7 @@ export default function RecordDetailPage() {
       {/* Main content */}
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <div className="border-b border-border px-6 py-4">
+        <div className="border-b border-border px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-3 mb-3">
             <Link href={`/objects/${slug}`}>
               <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -166,8 +166,8 @@ export default function RecordDetailPage() {
               <span>/</span>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold">{displayName}</h1>
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-xl sm:text-2xl font-semibold truncate">{displayName}</h1>
             <Button
               variant="ghost"
               size="sm"
@@ -182,7 +182,7 @@ export default function RecordDetailPage() {
         </div>
 
         {/* Tabs */}
-        <div className="px-6 py-4">
+        <div className="px-4 sm:px-6 py-3 sm:py-4">
           <Tabs defaultValue="attributes">
             <TabsList>
               <TabsTrigger value="attributes">Attributes</TabsTrigger>

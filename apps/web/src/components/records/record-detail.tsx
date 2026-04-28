@@ -36,15 +36,15 @@ export function RecordDetail({ attributes, values, onUpdate }: RecordDetailProps
         return (
           <div
             key={attr.id}
-            className="group flex items-start gap-2 rounded-md px-3 py-2 hover:bg-muted/30"
+            className="group flex flex-col sm:flex-row items-start gap-1 sm:gap-2 rounded-md px-3 py-2 hover:bg-muted/30"
           >
             {/* Label */}
-            <div className="w-40 shrink-0 pt-0.5">
-              <span className="text-sm text-muted-foreground">{attr.title}</span>
+            <div className="sm:w-40 shrink-0 pt-0.5">
+              <span className="text-xs sm:text-sm text-muted-foreground/80 sm:text-muted-foreground uppercase sm:normal-case tracking-wide sm:tracking-normal">{attr.title}</span>
             </div>
 
             {/* Value */}
-            <div className="relative min-h-[28px] flex-1">
+            <div className="relative min-h-[28px] flex-1 w-full">
               {isEditing ? (
                 <AttributeEditor
                   type={attr.type}

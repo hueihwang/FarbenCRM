@@ -140,9 +140,71 @@ export function RecordTable({
     getRowId: (row) => row.id,
   });
 
+  // First attribute is the record's display name; the next few become subtitle.
+  const titleAttr = attributes[0];
+  const subAttrs = attributes.slice(1, 5);
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-auto">
+      {/* Mobile: card list (hidden on md+) */}
+      <div className="md:hidden flex-1 overflow-auto">
+        {records.length === 0 ? (
+          <div className="h-32 flex items-center justify-center text-muted-foreground text-sm px-4 text-center">
+            No records yet. Tap “New record” below to create one.
+          </div>
+        ) : (
+          <ul className="divide-y divide-border/50">
+            {records.map((record) => (
+              <li key={record.id}>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/objects/${objectSlug}/${record.id}`)}
+                  className="w-full text-left px-4 py-3 hover:bg-muted/30 active:bg-muted/50 transition-colors"
+                >
+                  <div className="text-sm font-medium truncate">
+                    {titleAttr ? (
+                      <AttributeCell
+                        type={titleAttr.type}
+                        value={record.values[titleAttr.slug]}
+                        options={titleAttr.options}
+                        statuses={titleAttr.statuses}
+                      />
+                    ) : (
+                      "Untitled"
+                    )}
+                  </div>
+                  {subAttrs.length > 0 && (
+                    <dl className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
+                      {subAttrs.map((attr) => {
+                        const val = record.values[attr.slug];
+                        if (val === undefined || val === null || val === "") return null;
+                        return (
+                          <div key={attr.slug} className="min-w-0 flex gap-1">
+                            <dt className="text-muted-foreground/70 shrink-0">
+                              {attr.title}:
+                            </dt>
+                            <dd className="text-muted-foreground truncate min-w-0">
+                              <AttributeCell
+                                type={attr.type}
+                                value={val}
+                                options={attr.options}
+                                statuses={attr.statuses}
+                              />
+                            </dd>
+                          </div>
+                        );
+                      })}
+                    </dl>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Desktop: table view (md+) */}
+      <div className="hidden md:block flex-1 overflow-auto">
         <table className="w-full border-collapse min-w-[720px]">
           <thead className="sticky top-0 z-10 bg-background">
             {table.getHeaderGroups().map((headerGroup) => (
