@@ -33,7 +33,7 @@ export default function DashboardLayout({
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <Sidebar onNavigate={handleNavigation} />
+        <Sidebar onNavigate={handleNavigation} forceExpanded={sidebarOpen} />
       </div>
 
       {/* Main content */}
