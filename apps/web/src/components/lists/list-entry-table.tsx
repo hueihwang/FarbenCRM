@@ -171,7 +171,58 @@ export function ListEntryTable({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-auto">
+      {/* Mobile: card list (md and below) */}
+      <div className="md:hidden flex-1 overflow-auto">
+        {entries.length === 0 ? (
+          <div className="h-32 flex items-center justify-center text-muted-foreground text-sm px-4 text-center">
+            No entries yet. Add records to this list.
+          </div>
+        ) : (
+          <ul className="divide-y divide-border/50">
+            {entries.map((entry) => (
+              <li key={entry.id}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    router.push(
+                      `/objects/${entry.recordObjectSlug}/${entry.recordId}`
+                    )
+                  }
+                  className="w-full text-left px-4 py-3 hover:bg-muted/30 active:bg-muted/50 transition-colors"
+                >
+                  <div className="text-sm font-medium truncate">
+                    {entry.recordDisplayName || "Untitled"}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    Added {new Date(entry.createdAt).toLocaleDateString()}
+                  </div>
+                  {listAttributes.length > 0 && (
+                    <dl className="mt-1.5 grid grid-cols-1 gap-y-0.5 text-xs">
+                      {listAttributes.slice(0, 4).map((attr) => {
+                        const val = entry.listValues[attr.slug];
+                        if (val === undefined || val === null || val === "") return null;
+                        return (
+                          <div key={attr.slug} className="flex gap-1 min-w-0">
+                            <dt className="text-muted-foreground/70 shrink-0">
+                              {attr.title}:
+                            </dt>
+                            <dd className="text-muted-foreground truncate min-w-0">
+                              <AttributeCell type={attr.type as AttributeType} value={val} />
+                            </dd>
+                          </div>
+                        );
+                      })}
+                    </dl>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Desktop: table (md+) */}
+      <div className="hidden md:block flex-1 overflow-auto">
         <table className="w-full border-collapse min-w-[720px]">
           <thead className="sticky top-0 z-10 bg-background">
             {table.getHeaderGroups().map((headerGroup) => (
