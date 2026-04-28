@@ -373,3 +373,16 @@ html {
   border-radius: 0.75rem;
   margin: 1.5rem 0;
 }
+
+/* ── Mobile ergonomics ───────────────────────────────────────────────
+ * iOS Safari auto-zooms when an input with font-size <16px gets focus.
+ * This is jarring on a phone and shifts the whole layout. Bumping the
+ * base size to 16px on small viewports stops the zoom without affecting
+ * desktop typography. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
