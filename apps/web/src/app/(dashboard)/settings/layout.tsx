@@ -22,10 +22,10 @@ export default function SettingsLayout({
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full">
-      {/* Settings sidebar */}
-      <nav className="w-52 border-r border-border p-4 space-y-1">
-        <h2 className="text-lg font-semibold mb-4">Settings</h2>
+    <div className="flex flex-col md:flex-row h-full">
+      {/* Settings nav — horizontal scroll on mobile, sidebar on desktop */}
+      <nav className="md:w-52 md:shrink-0 border-b md:border-b-0 md:border-r border-border p-2 md:p-4 flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
+        <h2 className="hidden md:block text-lg font-semibold mb-2">Settings</h2>
         {settingsNav.map((item) => {
           const active = item.exact
             ? pathname === item.href
@@ -35,7 +35,7 @@ export default function SettingsLayout({
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors shrink-0",
                 active
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -49,7 +49,7 @@ export default function SettingsLayout({
       </nav>
 
       {/* Settings content */}
-      <div className="flex-1 overflow-y-auto p-6">{children}</div>
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
     </div>
   );
 }

@@ -271,7 +271,7 @@ export default function HomePage() {
   const showOnboarding = isNewUser && !onboardingDismissed && visibleSteps.length > 0;
 
   return (
-    <div className="p-6 max-w-5xl space-y-8">
+    <div className="p-4 sm:p-6 max-w-5xl space-y-6 sm:space-y-8">
       {/* ── Greeting ─────────────────────────────────── */}
       <div>
         <h1 className="text-2xl font-semibold">

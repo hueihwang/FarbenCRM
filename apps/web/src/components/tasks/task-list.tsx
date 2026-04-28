@@ -305,11 +305,11 @@ export function TaskList() {
       </div>
 
       {/* Column headers */}
-      <div className="grid grid-cols-[1fr_120px_150px_120px] gap-2 border-b border-border px-4 py-1.5 text-xs font-medium text-muted-foreground">
+      <div className="grid grid-cols-[1fr_100px] sm:grid-cols-[1fr_120px_150px_120px] gap-2 border-b border-border px-4 py-1.5 text-xs font-medium text-muted-foreground">
         <span>Task</span>
         <span>Due date</span>
-        <span>Record</span>
-        <span>Assigned to</span>
+        <span className="hidden sm:block">Record</span>
+        <span className="hidden sm:block">Assigned to</span>
       </div>
 
       {/* Error */}
@@ -425,7 +425,7 @@ function TaskRow({
 
   return (
     <div
-      className="group grid grid-cols-[1fr_120px_150px_120px] gap-2 items-center border-b border-border/30 px-4 py-2 hover:bg-muted/20 cursor-pointer"
+      className="group grid grid-cols-[1fr_100px] sm:grid-cols-[1fr_120px_150px_120px] gap-2 items-center border-b border-border/30 px-4 py-2 hover:bg-muted/20 cursor-pointer"
       onClick={onClick}
     >
       {/* Task column */}
@@ -471,7 +471,7 @@ function TaskRow({
       </div>
 
       {/* Record column */}
-      <div className="min-w-0">
+      <div className="hidden sm:block min-w-0">
         {task.linkedRecords.length > 0 && (
           <div className="flex items-center gap-1 truncate">
             {task.linkedRecords.slice(0, 2).map((rec) => (
@@ -494,7 +494,7 @@ function TaskRow({
       </div>
 
       {/* Assigned to column */}
-      <div className="flex items-center gap-1">
+      <div className="hidden sm:flex items-center gap-1">
         {task.assignees.slice(0, 3).map((a) => (
           <div
             key={a.id}
