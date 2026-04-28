@@ -67,13 +67,22 @@ interface Workspace {
   role: string;
 }
 
-export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+export function Sidebar({
+  onNavigate,
+  forceExpanded = false,
+}: {
+  onNavigate?: () => void;
+  /** When true, sidebar ignores hover state and stays fully expanded.
+   *  Used by the mobile drawer where hover doesn't exist on touch. */
+  forceExpanded?: boolean;
+}) {
   const pathname = usePathname();
   const [lists, setLists] = useState<ListItem[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
-  const [expanded, setExpanded] = useState(false);
+  const [hoverExpanded, setHoverExpanded] = useState(false);
+  const expanded = forceExpanded || hoverExpanded;
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -128,8 +137,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <aside
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
+      onMouseEnter={() => setHoverExpanded(true)}
+      onMouseLeave={() => setHoverExpanded(false)}
       className={cn(
         "flex h-full flex-col border-r border-sidebar-border bg-sidebar sidebar-glass transition-all duration-200 ease-out overflow-hidden",
         expanded ? "w-56" : "w-12"
