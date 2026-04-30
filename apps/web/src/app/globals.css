@@ -386,3 +386,12 @@ html {
     font-size: 16px;
   }
 }
+
+/* The page itself must never scroll horizontally — that causes the whole
+ * layout to drift left/right on touch. Tables that genuinely need
+ * horizontal scroll have their own overflow-x-auto wrapper. */
+html,
+body {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
