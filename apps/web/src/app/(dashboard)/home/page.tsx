@@ -297,6 +297,8 @@ export default function HomePage() {
             </div>
             <button
               onClick={dismissOnboarding}
+              aria-label="Dismiss onboarding"
+              title="Dismiss"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-4 w-4" />
@@ -321,6 +323,7 @@ export default function HomePage() {
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); dismissStep(step.id); }}
+                  aria-label={`Dismiss step: ${step.title}`}
                   className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground mt-0.5"
                   title="Dismiss"
                 >

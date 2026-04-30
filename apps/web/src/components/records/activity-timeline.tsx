@@ -18,8 +18,12 @@ interface ActivityTimelineProps {
 export function ActivityTimeline({ activities }: ActivityTimelineProps) {
   if (activities.length === 0) {
     return (
-      <div className="px-3 py-4 text-sm text-muted-foreground">
-        No activity yet.
+      <div className="px-3 py-8 text-center">
+        <p className="text-sm text-muted-foreground">No activity yet</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">
+          Edits, status changes, and field updates on this record will show
+          up here once anyone makes them.
+        </p>
       </div>
     );
   }

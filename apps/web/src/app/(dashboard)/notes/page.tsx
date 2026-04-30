@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   Plus,
   StickyNote,
-  Star,
   ArrowUpDown,
   Building2,
   ChevronDown,
@@ -192,23 +191,26 @@ export default function NotesPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
-        {/* Favorites section */}
-        <div className="px-4 pt-4 pb-2">
-          <h2 className="text-xs font-medium text-muted-foreground mb-3">
-            Favorites
-          </h2>
-          <div className="rounded-lg border-2 border-dashed border-border/50 py-8 text-center">
-            <Star className="h-6 w-6 text-muted-foreground/20 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Favorites</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">
-              Notes that you favorite will appear here
-            </p>
-          </div>
-        </div>
-
-        {/* Loading / Empty states */}
+        {/* Loading state — skeleton cards so users see the shape of what's coming */}
         {loading && notes.length === 0 && (
-          <p className="text-muted-foreground text-center py-12">Loading...</p>
+          <div className="px-4 pt-4 space-y-2" aria-busy="true" aria-live="polite">
+            <div className="text-xs font-medium text-muted-foreground mb-3">
+              Loading…
+            </div>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="rounded-lg border border-border/60 bg-card/30 px-4 py-3"
+              >
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <div className="h-3.5 w-3.5 rounded bg-muted animate-pulse" />
+                  <div className="h-3 w-32 rounded bg-muted animate-pulse" />
+                </div>
+                <div className="h-4 w-3/5 rounded bg-muted/70 animate-pulse mb-1" />
+                <div className="h-3 w-4/5 rounded bg-muted/50 animate-pulse" />
+              </div>
+            ))}
+          </div>
         )}
 
         {!loading && notes.length === 0 && (

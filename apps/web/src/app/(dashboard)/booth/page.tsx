@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Check, Loader2, Plus, Search, User2 } from "lucide-react";
+import { Building2, Check, Flame, Loader2, Plus, Search, Snowflake, Sun, User2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth-client";
+import { useToast } from "@/components/ui/toast";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -37,10 +38,15 @@ interface CompanyChoice {
   name: string;
 }
 
-const URGENCIES: { value: Urgency; label: string; tone: string }[] = [
-  { value: "Hot", label: "Hot", tone: "bg-red-500 hover:bg-red-600" },
-  { value: "Warm", label: "Warm", tone: "bg-amber-500 hover:bg-amber-600" },
-  { value: "Cool", label: "Cool", tone: "bg-slate-500 hover:bg-slate-600" },
+const URGENCIES: {
+  value: Urgency;
+  label: string;
+  tone: string;
+  Icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { value: "Hot", label: "Hot", tone: "bg-red-500 hover:bg-red-600", Icon: Flame },
+  { value: "Warm", label: "Warm", tone: "bg-amber-500 hover:bg-amber-600", Icon: Sun },
+  { value: "Cool", label: "Cool", tone: "bg-slate-500 hover:bg-slate-600", Icon: Snowflake },
 ];
 
 // ─── Page ────────────────────────────────────────────────────────────
@@ -48,6 +54,7 @@ const URGENCIES: { value: Urgency; label: string; tone: string }[] = [
 export default function BoothPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const toast = useToast();
 
   // Context (set once per session, persists across captures)
   const [lists, setLists] = useState<ListOption[]>([]);
@@ -72,8 +79,6 @@ export default function BoothPage() {
   const [noteContent, setNoteContent] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
-  const [savedFlash, setSavedFlash] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -212,8 +217,7 @@ export default function BoothPage() {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error?.message ?? `HTTP ${res.status}`);
       }
-      setSavedFlash(`Saved — ${company.name}`);
-      setTimeout(() => setSavedFlash(null), 1800);
+      toast.success(`Saved — ${company.name}`);
       // Reset per-capture state. Keep Event + Captured by for the session.
       clearCompany();
       setFirstName("");
@@ -224,7 +228,7 @@ export default function BoothPage() {
       setUrgency(null);
       setNoteContent("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      toast.error(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
@@ -288,18 +292,6 @@ export default function BoothPage() {
           </select>
         </div>
       </div>
-
-      {savedFlash && (
-        <div className="rounded-md bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900 px-4 py-2 text-sm text-green-800 dark:text-green-200 flex items-center gap-2">
-          <Check className="h-4 w-4" /> {savedFlash}
-        </div>
-      )}
-
-      {error && (
-        <div className="rounded-md bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 px-4 py-2 text-sm text-red-800 dark:text-red-200">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={onSubmit} className="space-y-5">
         {/* Company */}
@@ -416,12 +408,15 @@ export default function BoothPage() {
                     key={u.value}
                     type="button"
                     onClick={() => setUrgency(active ? null : u.value)}
+                    aria-pressed={active}
+                    aria-label={`Urgency ${u.label}`}
                     className={cn(
-                      "rounded-md py-2.5 font-medium text-white text-sm transition-opacity",
+                      "flex items-center justify-center gap-1.5 rounded-md py-2.5 font-medium text-white text-sm transition-opacity",
                       u.tone,
                       active ? "opacity-100" : "opacity-30"
                     )}
                   >
+                    <u.Icon className="h-4 w-4" aria-hidden="true" />
                     {u.label}
                   </button>
                 );
