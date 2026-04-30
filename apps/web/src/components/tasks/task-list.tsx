@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskDialog } from "./task-dialog";
+import { useToast } from "@/components/ui/toast";
 import {
   isToday,
   isTomorrow,
@@ -131,6 +132,7 @@ export function TaskList() {
   const [showCompleted, setShowCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const toast = useToast();
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -187,17 +189,32 @@ export function TaskList() {
   }, [fetchTasks]);
 
   async function toggleComplete(taskId: string, isCompleted: boolean) {
+    // Optimistic update
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId ? { ...t, isCompleted: !isCompleted } : t
       )
     );
-
-    await fetch(`/api/v1/tasks/${taskId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isCompleted: !isCompleted }),
-    });
+    try {
+      const res = await fetch(`/api/v1/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isCompleted: !isCompleted }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      // Roll back on failure so the UI doesn't lie
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId ? { ...t, isCompleted } : t
+        )
+      );
+      toast.error(
+        err instanceof Error
+          ? `Couldn't update task: ${err.message}`
+          : "Couldn't update task"
+      );
+    }
   }
 
   function openCreateDialog() {
@@ -322,7 +339,22 @@ export function TaskList() {
       {/* Task list */}
       <div className="flex-1 overflow-auto">
         {loading && tasks.length === 0 && (
-          <p className="text-muted-foreground text-center py-12">Loading...</p>
+          <div className="space-y-px" aria-busy="true" aria-live="polite">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[1fr_100px] sm:grid-cols-[1fr_120px_150px_120px] gap-2 items-center border-b border-border/30 px-4 py-2.5"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="h-4 w-4 rounded-full bg-muted animate-pulse" />
+                  <div className="h-3.5 rounded bg-muted/70 animate-pulse" style={{ width: `${40 + ((i * 13) % 50)}%` }} />
+                </div>
+                <div className="h-3 w-16 rounded bg-muted/50 animate-pulse" />
+                <div className="hidden sm:block h-3 w-24 rounded bg-muted/50 animate-pulse" />
+                <div className="hidden sm:block h-5 w-12 rounded-full bg-muted/50 animate-pulse" />
+              </div>
+            ))}
+          </div>
         )}
 
         {!loading && tasks.length === 0 && (

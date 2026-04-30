@@ -44,17 +44,55 @@ export function RecordCreateModal({
 }: RecordCreateModalProps) {
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [missing, setMissing] = useState<Set<string>>(new Set());
+
+  function isEmpty(val: unknown): boolean {
+    if (val === undefined || val === null || val === "") return true;
+    if (Array.isArray(val) && val.length === 0) return true;
+    if (typeof val === "object") {
+      // personal_name shape
+      const obj = val as Record<string, unknown>;
+      if ("fullName" in obj || "firstName" in obj) {
+        const f = (obj.firstName as string) ?? "";
+        const l = (obj.lastName as string) ?? "";
+        const fl = (obj.fullName as string) ?? "";
+        return !f.trim() && !l.trim() && !fl.trim();
+      }
+    }
+    return false;
+  }
 
   function setValue(slug: string, val: unknown) {
     setValues((prev) => ({ ...prev, [slug]: val }));
+    // Clear that field's missing flag once the user types something
+    setMissing((prev) => {
+      if (!prev.has(slug)) return prev;
+      const next = new Set(prev);
+      next.delete(slug);
+      return next;
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Collect required fields that are still empty so we can highlight them
+    // inline rather than relying on the browser's native :invalid styling
+    // (which doesn't catch our custom multiselect/personal-name editors).
+    const missingNow = new Set<string>();
+    for (const attr of attributes) {
+      if (attr.isRequired && isEmpty(values[attr.slug])) {
+        missingNow.add(attr.slug);
+      }
+    }
+    if (missingNow.size > 0) {
+      setMissing(missingNow);
+      return;
+    }
     setSubmitting(true);
     try {
       await onSubmit(values);
       setValues({});
+      setMissing(new Set());
       onClose();
     } finally {
       setSubmitting(false);
@@ -68,13 +106,23 @@ export function RecordCreateModal({
           <DialogTitle>Create {objectName}</DialogTitle>
           <DialogDescription>Fill in the fields to create a new record.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          {missing.size > 0 && (
+            <div
+              role="alert"
+              className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              Please fill in the highlighted required field
+              {missing.size > 1 ? "s" : ""}.
+            </div>
+          )}
           {attributes.map((attr) => (
             <FieldInput
               key={attr.id}
               attr={attr}
               value={values[attr.slug]}
               onChange={(val) => setValue(attr.slug, val)}
+              hasError={missing.has(attr.slug)}
             />
           ))}
           <DialogFooter>
@@ -95,18 +143,30 @@ function FieldInput({
   attr,
   value,
   onChange,
+  hasError = false,
 }: {
   attr: AttributeDef;
   value: unknown;
   onChange: (val: unknown) => void;
+  hasError?: boolean;
 }) {
   const { type, title, isRequired, slug } = attr;
 
   return (
-    <div className="space-y-1.5">
+    <div
+      className={cn(
+        "space-y-1.5 rounded-md transition-colors",
+        hasError && "ring-2 ring-destructive/50 ring-offset-2 ring-offset-background"
+      )}
+    >
       <Label>
         {title}
         {isRequired && <span className="ml-1 text-destructive">*</span>}
+        {hasError && (
+          <span className="ml-2 text-xs font-normal text-destructive">
+            Required
+          </span>
+        )}
       </Label>
 
       {type === "text" || type === "email_address" || type === "phone_number" || type === "domain" ? (

@@ -44,7 +44,13 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <header className="flex h-12 items-center justify-between border-b border-border/50 px-3 sm:px-6">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={onMenuClick}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden h-8 w-8"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+        >
           <Menu className="h-4 w-4" />
         </Button>
 
@@ -61,7 +67,15 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
       </div>
 
       <div className="flex items-center gap-1">
-        <Link href="/notifications" className="relative">
+        <Link
+          href="/notifications"
+          className="relative"
+          aria-label={
+            unreadCount > 0
+              ? `Notifications, ${unreadCount} unread`
+              : "Notifications"
+          }
+        >
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <Bell className="h-4 w-4" />
           </Button>
@@ -77,7 +91,14 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
             {session.user.name}
           </span>
         )}
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSignOut}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={handleSignOut}
+          aria-label="Sign out"
+          title="Sign out"
+        >
           <LogOut className="h-4 w-4" />
         </Button>
       </div>

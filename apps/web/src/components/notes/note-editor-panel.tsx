@@ -16,6 +16,7 @@ import {
   Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 interface NoteEditorPanelProps {
   open: boolean;
@@ -50,6 +51,7 @@ export function NoteEditorPanel({
   const [saving, setSaving] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [ready, setReady] = useState(false);
+  const toast = useToast();
 
   const titleRef = useRef<HTMLInputElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -131,16 +133,26 @@ export function NoteEditorPanel({
     const nId = liveNoteIdRef.current;
     if (!nId) return;
     setSaving(true);
-    await fetch(`/api/v1/notes/${nId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: titleLatest.current,
-        content: contentLatest.current,
-      }),
-    });
-    setSaving(false);
-  }, []);
+    try {
+      const res = await fetch(`/api/v1/notes/${nId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: titleLatest.current,
+          content: contentLatest.current,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? `Couldn't save note: ${err.message}`
+          : "Couldn't save note"
+      );
+    } finally {
+      setSaving(false);
+    }
+  }, [toast]);
 
   const scheduleSave = useCallback(() => {
     if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current);
