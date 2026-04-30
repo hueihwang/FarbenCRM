@@ -187,7 +187,6 @@ export default function BoothPage() {
     e.preventDefault();
     if (!company || !noteContent.trim()) return;
     setSubmitting(true);
-    setError(null);
 
     const wantsPerson =
       firstName.trim() || lastName.trim() || email.trim() || phone.trim();
