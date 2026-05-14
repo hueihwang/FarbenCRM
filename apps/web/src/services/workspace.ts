@@ -72,17 +72,16 @@ export async function createWorkspace(name: string, userId: string) {
 }
 
 /**
- * Join a newly-registered user to the default workspace (the oldest one
- * in the system) as a member. Idempotent: if the user already has any
- * workspace membership, returns that workspace without changes.
+ * Look up the user's first workspace membership, if any. Does NOT create
+ * one on the fly — a newly-registered user gets nothing back.
  *
- * This implements the "single-tenant FarbenCRM" behaviour — every new
- * user lands in the same shared workspace instead of getting their own
- * personal one. Returns null when no workspaces exist anywhere yet
- * (caller should redirect to the create-workspace flow).
+ * Previously this function auto-added every new signup to the oldest
+ * workspace in the system. That made every public registration a
+ * privacy hole because the visitor immediately saw all the existing
+ * data. Now access is invite-only: an admin must explicitly add the
+ * user via Settings → Members.
  */
-export async function joinDefaultWorkspace(userId: string) {
-  // If the user already belongs to a workspace, prefer the oldest of those.
+export async function findFirstUserWorkspace(userId: string) {
   const existing = await db
     .select({
       id: workspaces.id,
@@ -96,29 +95,7 @@ export async function joinDefaultWorkspace(userId: string) {
     .orderBy(asc(workspaces.createdAt))
     .limit(1);
 
-  if (existing.length > 0) return existing[0];
-
-  // Find the oldest workspace in the system — that's our default.
-  const [defaultWs] = await db
-    .select({
-      id: workspaces.id,
-      name: workspaces.name,
-      slug: workspaces.slug,
-      createdAt: workspaces.createdAt,
-    })
-    .from(workspaces)
-    .orderBy(asc(workspaces.createdAt))
-    .limit(1);
-
-  if (!defaultWs) return null;
-
-  await db.insert(workspaceMembers).values({
-    workspaceId: defaultWs.id,
-    userId,
-    role: "member",
-  });
-
-  return defaultWs;
+  return existing[0] ?? null;
 }
 
 /** List all workspaces a user is a member of */

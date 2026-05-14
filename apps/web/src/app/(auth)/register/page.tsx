@@ -37,27 +37,25 @@ export default function RegisterPage() {
         return;
       }
 
-      // Add the new user to the default (shared) workspace. FarbenCRM is
-      // single-tenant in this deployment — every user lands in the same
-      // workspace instead of getting their own.
+      // Check whether the new user already has a workspace membership
+      // (e.g. an admin pre-invited them by email and they just finished
+      // setting their password). If so, redirect to /home. Otherwise
+      // they go to /pending-access — they are NOT auto-joined to any
+      // existing workspace, which would be a privacy leak.
       const joinRes = await fetch("/api/v1/auth/post-signup", {
         method: "POST",
       });
 
-      if (!joinRes.ok) {
-        // No workspace exists yet → very first user must create one.
-        // 409 = "no default workspace" (see post-signup endpoint).
-        if (joinRes.status === 409) {
-          router.push("/select-workspace?create=true");
-          return;
-        }
-        router.push("/select-workspace");
+      trackEvent("signup_completed");
+
+      if (joinRes.status === 200) {
+        // Active-workspace cookie was set by the response. They're in.
+        router.push("/home");
         return;
       }
 
-      // Cookie is set by the post-signup response, redirect to home.
-      trackEvent("signup_completed");
-      router.push("/home");
+      // 204 = no workspace yet → invite-only state.
+      router.push("/pending-access");
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
