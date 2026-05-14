@@ -6,10 +6,17 @@ import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
 import { trackEvent } from "@/lib/analytics";
 
+/** Must match ALLOWED_SIGNUP_DOMAIN in lib/auth.ts. */
+const SIGNUP_DOMAIN = "farbentechnique.com";
+
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // We collect just the local-part; the @domain is appended on submit.
+  const [emailLocal, setEmailLocal] = useState("");
+  const email = emailLocal.trim()
+    ? `${emailLocal.trim().toLowerCase()}@${SIGNUP_DOMAIN}`
+    : "";
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -101,15 +108,28 @@ export default function RegisterPage() {
           <label htmlFor="email" className="text-label text-muted-foreground">
             Email
           </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className={inputClass}
-          />
+          <div className="flex">
+            <input
+              id="email"
+              type="text"
+              placeholder="your.name"
+              value={emailLocal}
+              onChange={(e) =>
+                // Strip the suffix if the user pastes a full email
+                setEmailLocal(
+                  e.target.value
+                    .replace(new RegExp("@" + SIGNUP_DOMAIN + "$", "i"), "")
+                    .replace(/\s+/g, "")
+                )
+              }
+              required
+              autoComplete="username"
+              className={`${inputClass} rounded-r-none border-r-0 flex-1 min-w-0`}
+            />
+            <span className="flex items-center px-3 text-[14px] text-muted-foreground rounded-r-xl border border-l-0 border-foreground/8 dark:border-white/[0.06] bg-foreground/[0.04] dark:bg-white/[0.04] shrink-0">
+              @{SIGNUP_DOMAIN}
+            </span>
+          </div>
         </div>
         <div className="space-y-1.5">
           <label
