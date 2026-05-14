@@ -1,16 +1,20 @@
 // POST /api/v1/auth/post-signup
 //
-// Called by the Register page right after Better Auth creates the user
-// account. Adds the new user to the default workspace (the oldest one
-// in the system) instead of creating a personal workspace per user.
+// Called by the Register page after Better Auth creates the user
+// account. We DELIBERATELY do not auto-add the user to any workspace
+// — access has to be granted explicitly by an admin via
+// Settings → Members. This prevents the public registration form
+// from being a data-leak vector.
 //
-// This makes FarbenCRM behave as single-tenant: every registered user
-// sees the same data. If you ever want true multi-tenancy back, this
-// endpoint is the single place to change it.
+// If the user happens to be a member of a workspace already (e.g.
+// admin invited them by email before they finished registering), we
+// set the active-workspace cookie so they land in that workspace.
+// Otherwise we return 204 and the register page sends them to the
+// "no workspaces yet" screen.
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { joinDefaultWorkspace } from "@/services/workspace";
+import { findFirstUserWorkspace } from "@/services/workspace";
 
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: req.headers });
@@ -21,19 +25,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const workspace = await joinDefaultWorkspace(session.user.id);
+  const workspace = await findFirstUserWorkspace(session.user.id);
+
   if (!workspace) {
-    // No workspaces exist at all — caller should send the user to the
-    // create-workspace flow so the very first user can bootstrap one.
-    return NextResponse.json(
-      {
-        error: {
-          code: "NO_DEFAULT_WORKSPACE",
-          message: "No workspace exists yet. Create one to continue.",
-        },
-      },
-      { status: 409 }
-    );
+    // No membership yet — register page will redirect to /pending-access
+    return new NextResponse(null, { status: 204 });
   }
 
   const response = NextResponse.json({ data: workspace }, { status: 200 });
