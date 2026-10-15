@@ -83,4 +83,6 @@ export const statuses = pgTable("statuses", {
   sortOrder: integer("sort_order").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
   celebrationEnabled: boolean("celebration_enabled").notNull().default(false),
+  /** Records idle in this stage for this many days are "rotting". Null = never. */
+  rottingDays: integer("rotting_days"),
 });

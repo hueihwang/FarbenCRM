@@ -19,6 +19,7 @@ import type { AttributeType } from "@farbencrm/shared";
 import { cn } from "@/lib/utils";
 import { GripVertical } from "lucide-react";
 import { extractPersonalName } from "@/lib/display-name";
+import { idleDays, isRotting } from "@/lib/rotting";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -27,6 +28,7 @@ interface StatusDef {
   title: string;
   color: string;
   isActive: boolean;
+  rottingDays?: number | null;
 }
 
 interface AttributeDef {
@@ -42,6 +44,7 @@ interface AttributeDef {
 interface RecordRow {
   id: string;
   values: Record<string, unknown>;
+  lastActivityAt?: string;
 }
 
 interface InsertInfo {
@@ -279,6 +282,7 @@ export function RecordKanban({
             id={status.id}
             title={status.title}
             color={status.color}
+            stage={status}
             records={columnMap.get(status.id) || []}
             nameAttr={nameAttr}
             currencyAttr={currencyAttr}
@@ -310,6 +314,7 @@ function KanbanColumn({
   id,
   title,
   color,
+  stage,
   records,
   nameAttr,
   currencyAttr,
@@ -321,6 +326,7 @@ function KanbanColumn({
   id: string;
   title: string;
   color: string;
+  stage?: StatusDef;
   records: RecordRow[];
   nameAttr?: AttributeDef;
   currencyAttr?: AttributeDef;
@@ -332,6 +338,7 @@ function KanbanColumn({
   const { setNodeRef, isOver } = useDroppable({ id });
 
   const count = records.length;
+  const rottingCount = records.filter((r) => isRotting(r.lastActivityAt, stage)).length;
   let currencySum: number | null = null;
   if (currencyAttr) {
     currencySum = records.reduce((sum, rec) => {
@@ -363,7 +370,15 @@ function KanbanColumn({
           style={{ backgroundColor: color }}
         />
         <span className="text-sm font-medium truncate">{title}</span>
-        <span className="ml-auto text-xs text-muted-foreground">{count}</span>
+        {rottingCount > 0 && (
+          <span
+            className="ml-auto rounded-full bg-destructive/10 px-1.5 text-[11px] font-medium text-destructive"
+            title={`${rottingCount} idle for ${stage?.rottingDays}+ days`}
+          >
+            {rottingCount} rotting
+          </span>
+        )}
+        <span className={cn("text-xs text-muted-foreground", rottingCount === 0 && "ml-auto")}>{count}</span>
       </div>
 
       {/* Currency total */}
@@ -384,6 +399,7 @@ function KanbanColumn({
             {insertIdx === i && <InsertIndicator />}
             <KanbanCard
               record={record}
+              stage={stage}
               nameAttr={nameAttr}
               currencyAttr={currencyAttr}
               attributes={attributes}
@@ -420,12 +436,14 @@ function InsertIndicator() {
 
 function KanbanCard({
   record,
+  stage,
   nameAttr,
   currencyAttr,
   attributes,
   onClick,
 }: {
   record: RecordRow;
+  stage?: StatusDef;
   nameAttr?: AttributeDef;
   currencyAttr?: AttributeDef;
   attributes: AttributeDef[];
@@ -442,6 +460,8 @@ function KanbanCard({
   const currencyVal = currencyAttr
     ? (record.values[currencyAttr.slug] as { amount?: number; currencyCode?: string } | undefined)
     : undefined;
+  const rotting = isRotting(record.lastActivityAt, stage);
+  const idle = idleDays(record.lastActivityAt);
 
   const extraFields = attributes
     .filter(
@@ -459,6 +479,7 @@ function KanbanCard({
       data-record-id={record.id}
       className={cn(
         "group rounded-md border border-border/60 bg-background p-2.5 shadow-sm cursor-pointer hover:border-border transition-colors",
+        rotting && "border-destructive/70 hover:border-destructive",
         isDragging && "opacity-30"
       )}
       onClick={onClick}
@@ -474,6 +495,9 @@ function KanbanCard({
         </button>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium truncate">{displayName}</p>
+          {rotting && (
+            <p className="mt-0.5 text-xs font-medium text-destructive">Idle {idle} days</p>
+          )}
 
           {currencyVal?.amount != null && (
             <p className="mt-0.5 text-xs text-muted-foreground">

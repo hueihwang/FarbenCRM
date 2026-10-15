@@ -236,6 +236,7 @@ export async function updateStatus(
     sortOrder?: number;
     isActive?: boolean;
     celebrationEnabled?: boolean;
+    rottingDays?: number | null;
   }
 ) {
   const [updated] = await db
@@ -246,6 +247,7 @@ export async function updateStatus(
       ...(input.sortOrder !== undefined && { sortOrder: input.sortOrder }),
       ...(input.isActive !== undefined && { isActive: input.isActive }),
       ...(input.celebrationEnabled !== undefined && { celebrationEnabled: input.celebrationEnabled }),
+      ...(input.rottingDays !== undefined && { rottingDays: input.rottingDays }),
     })
     .where(eq(statuses.id, id))
     .returning();

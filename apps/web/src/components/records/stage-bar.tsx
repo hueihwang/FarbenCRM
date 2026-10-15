@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { idleDays, isRotting } from "@/lib/rotting";
 
 interface StageHistory {
-  stages: { id: string; title: string; color: string; sortOrder: number; isActive: boolean }[];
+  stages: { id: string; title: string; color: string; sortOrder: number; isActive: boolean; rottingDays: number | null }[];
   timeInStage: { statusId: string; title: string; ms: number }[];
   currentStatusId: string | null;
   currentSince: string | null;
@@ -25,7 +26,17 @@ export function formatDuration(ms: number): string {
  * one segment per open stage showing the time spent there, and the closed
  * outcome (Won, Lost) as a badge once reached. Re-fetches when `version` changes.
  */
-export function StageBar({ objectSlug, recordId, version }: { objectSlug: string; recordId: string; version: number }) {
+export function StageBar({
+  objectSlug,
+  recordId,
+  version,
+  lastActivityAt,
+}: {
+  objectSlug: string;
+  recordId: string;
+  version: number;
+  lastActivityAt?: string;
+}) {
   const [history, setHistory] = useState<StageHistory | null>(null);
 
   useEffect(() => {
@@ -48,6 +59,7 @@ export function StageBar({ objectSlug, recordId, version }: { objectSlug: string
   const current = history.stages.find((s) => s.id === history.currentStatusId);
   const currentIndex = open.findIndex((s) => s.id === history.currentStatusId);
   const closedOutcome = current && !current.isActive ? current : null;
+  const rotting = isRotting(lastActivityAt, current);
 
   return (
     <div className="mt-3 flex items-center gap-2">
@@ -79,6 +91,14 @@ export function StageBar({ objectSlug, recordId, version }: { objectSlug: string
           );
         })}
       </div>
+      {rotting && (
+        <span
+          className="shrink-0 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive"
+          title={`No activity for ${idleDays(lastActivityAt)} days; this stage allows ${current?.rottingDays}`}
+        >
+          Rotting: idle {idleDays(lastActivityAt)} days
+        </span>
+      )}
       {closedOutcome && (
         <span
           className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-white"

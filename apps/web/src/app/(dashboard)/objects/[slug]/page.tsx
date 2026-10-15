@@ -24,8 +24,10 @@ import {
   Upload,
   Pencil,
   Check,
+  Hourglass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isRotting } from "@/lib/rotting";
 
 export default function ObjectPage() {
   const params = useParams<{ slug: string }>();
@@ -58,10 +60,18 @@ export default function ObjectPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [rottingOnly, setRottingOnly] = useState(false);
 
   // Auto-detect if board view is available (has a status attribute)
   const statusAttr = object?.attributes.find((a) => a.type === "status");
   const hasBoardView = !!statusAttr;
+
+  // "Rotting only": open-stage records idle past their stage's limit
+  const hasRottingRules = !!statusAttr?.statuses?.some((s) => s.rottingDays);
+  const stageOf = (r: { values: Record<string, unknown> }) =>
+    statusAttr?.statuses?.find((s) => s.id === r.values[statusAttr.slug]);
+  const rottingRecords = records.filter((r) => isRotting(r.lastActivityAt, stageOf(r)));
+  const shownRecords = rottingOnly && hasRottingRules ? rottingRecords : records;
 
   if (loading && !object) {
     return (
@@ -153,6 +163,25 @@ export default function ObjectPage() {
               onClose={() => setSortOpen(false)}
             />
           </Popover>
+
+          {/* Rotting only */}
+          {hasRottingRules && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRottingOnly((v) => !v)}
+              className={cn("text-xs gap-1", rottingOnly && "text-destructive")}
+              title="Show only deals idle longer than their stage allows"
+            >
+              <Hourglass className="h-3.5 w-3.5" />
+              Rotting
+              {rottingRecords.length > 0 && (
+                <span className="ml-0.5 rounded-full bg-destructive/10 px-1.5 text-[10px] text-destructive">
+                  {rottingRecords.length}
+                </span>
+              )}
+            </Button>
+          )}
 
           {/* View toggle */}
           {hasBoardView && (
@@ -277,7 +306,7 @@ export default function ObjectPage() {
         {view === "table" ? (
           <RecordTable
             attributes={object.attributes as any}
-            records={records}
+            records={shownRecords}
             onUpdateRecord={updateRecord}
             onCreateRecord={() => setCreateOpen(true)}
             objectSlug={slug}
@@ -286,7 +315,7 @@ export default function ObjectPage() {
         ) : (
           <RecordKanban
             attributes={object.attributes as any}
-            records={records}
+            records={shownRecords}
             statusAttributeSlug={statusAttr!.slug}
             onMoveRecord={(recordId, newStatusId) =>
               updateRecord(recordId, statusAttr!.slug, newStatusId)

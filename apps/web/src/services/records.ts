@@ -24,6 +24,7 @@ export interface FlatRecord {
   createdAt: Date;
   createdBy: string | null;
   updatedAt: Date;
+  lastActivityAt: Date;
   values: Record<string, unknown>;
 }
 
@@ -307,6 +308,7 @@ async function hydrateRecords(
       createdAt: rec.createdAt,
       createdBy: rec.createdBy,
       updatedAt: rec.updatedAt,
+      lastActivityAt: rec.lastActivityAt,
       values,
     };
   });
@@ -441,7 +443,7 @@ export async function updateRecord(
   // Update timestamp
   await db
     .update(records)
-    .set({ updatedAt: new Date() })
+    .set({ updatedAt: new Date(), lastActivityAt: new Date() })
     .where(eq(records.id, recordId));
 
   // Delete existing values for the attributes being updated, then insert new

@@ -12,6 +12,7 @@ import {
   Lock,
 } from "lucide-react";
 import { ATTRIBUTE_TYPES } from "@farbencrm/shared";
+import { PipelineStageSettings } from "@/components/settings/pipeline-stage-settings";
 
 interface Attribute {
   id: string;
@@ -22,6 +23,7 @@ interface Attribute {
   isRequired: boolean;
   isMultiselect: boolean;
   sortOrder: number;
+  statuses?: { id: string; title: string; color: string; isActive: boolean; rottingDays?: number | null }[];
 }
 
 interface ObjectDef {
@@ -281,6 +283,18 @@ export default function ObjectSettingsPage() {
                         </tbody>
                       </table>
                       </div>
+
+                      {/* Pipeline stages: rotting limits */}
+                      {attrs
+                        .filter((a) => a.type === "status" && a.statuses?.length)
+                        .map((a) => (
+                          <PipelineStageSettings
+                            key={a.id}
+                            objectSlug={obj.slug}
+                            attributeTitle={a.title}
+                            stages={a.statuses!}
+                          />
+                        ))}
 
                       {/* Add attribute form */}
                       <div className="flex items-end gap-2 border-t border-border px-4 py-3 bg-muted/20">

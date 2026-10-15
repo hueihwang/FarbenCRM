@@ -81,7 +81,7 @@ export async function logStatusChanges(
 export interface StageHistory {
   attributeId: string;
   attributeTitle: string;
-  stages: { id: string; title: string; color: string; sortOrder: number; isActive: boolean }[];
+  stages: { id: string; title: string; color: string; sortOrder: number; isActive: boolean; rottingDays: number | null }[];
   changes: {
     id: string;
     fromStatusId: string | null;
@@ -119,6 +119,7 @@ export async function getStageHistory(
       color: statuses.color,
       sortOrder: statuses.sortOrder,
       isActive: statuses.isActive,
+      rottingDays: statuses.rottingDays,
     })
     .from(statuses)
     .where(eq(statuses.attributeId, attr.id))

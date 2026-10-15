@@ -36,6 +36,7 @@ interface RecordData {
   createdAt: string;
   createdBy: string | null;
   updatedAt: string;
+  lastActivityAt?: string;
   values: Record<string, unknown>;
 }
 
@@ -92,7 +93,9 @@ export default function RecordDetailPage() {
   const handleUpdate = useCallback(
     async (attrSlug: string, value: unknown) => {
       setRecord((prev) =>
-        prev ? { ...prev, values: { ...prev.values, [attrSlug]: value } } : prev
+        prev
+          ? { ...prev, values: { ...prev.values, [attrSlug]: value }, lastActivityAt: new Date().toISOString() }
+          : prev
       );
 
       await fetch(`/api/v1/objects/${slug}/records/${recordId}`, {
@@ -189,7 +192,12 @@ export default function RecordDetailPage() {
             </Button>
           </div>
           {object.attributes.some((a: any) => a.type === "status") && (
-            <StageBar objectSlug={slug} recordId={recordId} version={stageVersion} />
+            <StageBar
+              objectSlug={slug}
+              recordId={recordId}
+              version={stageVersion}
+              lastActivityAt={record.lastActivityAt}
+            />
           )}
         </div>
 

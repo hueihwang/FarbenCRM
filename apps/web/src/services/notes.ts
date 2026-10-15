@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { notes, objects, records } from "@/db/schema";
 import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { batchGetRecordDisplayNames } from "./display-names";
+import { touchRecords } from "./record-activity";
 
 export interface NoteData {
   id: string;
@@ -112,6 +113,7 @@ export async function createNote(
     .insert(notes)
     .values({ recordId, title, content, createdBy })
     .returning();
+  await touchRecords([recordId]);
   return note;
 }
 
@@ -124,6 +126,7 @@ export async function updateNote(
     .set({ ...updates, updatedAt: new Date() })
     .where(eq(notes.id, noteId))
     .returning();
+  if (note) await touchRecords([note.recordId]);
   return note;
 }
 

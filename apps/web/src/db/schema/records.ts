@@ -12,6 +12,8 @@ export const records = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
     createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    /** Latest of: record edited, note added or edited, linked task created or changed. */
+    lastActivityAt: timestamp("last_activity_at").notNull().defaultNow(),
     sortOrder: integer("sort_order").notNull().default(0),
   },
   (table) => [

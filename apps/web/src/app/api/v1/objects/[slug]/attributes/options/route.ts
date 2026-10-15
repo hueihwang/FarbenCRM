@@ -78,6 +78,13 @@ export async function PATCH(req: NextRequest) {
     return success(updated);
   }
   if (attributeType === "status") {
+    if (
+      input.rottingDays !== undefined &&
+      input.rottingDays !== null &&
+      !(Number.isInteger(input.rottingDays) && input.rottingDays >= 1 && input.rottingDays <= 365)
+    ) {
+      return badRequest("rottingDays must be a whole number of days from 1 to 365, or null to switch rotting off");
+    }
     const updated = await updateStatus(optionId, input);
     if (!updated) return notFound("Status not found");
     return success(updated);

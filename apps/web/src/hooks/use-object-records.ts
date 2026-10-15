@@ -11,7 +11,7 @@ interface AttributeDef {
   isRequired: boolean;
   isMultiselect: boolean;
   options?: { id: string; title: string; color: string }[];
-  statuses?: { id: string; title: string; color: string; isActive: boolean }[];
+  statuses?: { id: string; title: string; color: string; isActive: boolean; rottingDays?: number | null }[];
 }
 
 interface ObjectData {
@@ -26,6 +26,7 @@ interface ObjectData {
 interface RecordRow {
   id: string;
   values: Record<string, unknown>;
+  lastActivityAt?: string;
 }
 
 const EMPTY_FILTER: FilterGroup = { operator: "and", conditions: [] };
@@ -100,7 +101,7 @@ export function useObjectRecords(slug: string) {
       setRecords((prev) =>
         prev.map((r) =>
           r.id === recordId
-            ? { ...r, values: { ...r.values, [attrSlug]: value } }
+            ? { ...r, values: { ...r.values, [attrSlug]: value }, lastActivityAt: new Date().toISOString() }
             : r
         )
       );

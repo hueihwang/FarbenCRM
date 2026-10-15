@@ -7,6 +7,7 @@ import {
 } from "@/db/schema";
 import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { batchGetRecordDisplayNames } from "./display-names";
+import { touchRecords, touchTaskRecords } from "./record-activity";
 
 export interface TaskData {
   id: string;
@@ -165,6 +166,7 @@ export async function createTask(
         recordId,
       }))
     );
+    await touchRecords(options.recordIds);
   }
 
   // Add assignees
@@ -238,6 +240,9 @@ export async function updateTask(
       );
     }
   }
+
+  // Creating, completing or editing a task counts as activity on its records
+  await touchTaskRecords(taskId);
 
   // Re-fetch the task to return enriched data
   const [task] = await db
