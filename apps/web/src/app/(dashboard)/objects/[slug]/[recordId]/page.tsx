@@ -6,6 +6,7 @@ import Link from "next/link";
 import { RecordDetail } from "@/components/records/record-detail";
 import { RelatedRecords } from "@/components/records/related-records";
 import { ActivityTimeline } from "@/components/records/activity-timeline";
+import { StageBar } from "@/components/records/stage-bar";
 import { RecordNotes } from "@/components/notes/record-notes";
 import { RecordTasks } from "@/components/tasks/record-tasks";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,6 +59,7 @@ export default function RecordDetailPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [stageVersion, setStageVersion] = useState(0);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -98,8 +100,15 @@ export default function RecordDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ values: { [attrSlug]: value } }),
       });
+
+      // A stage change updates the stage bar and the activity feed
+      if (object?.attributes.find((a: any) => a.slug === attrSlug)?.type === "status") {
+        setStageVersion((v) => v + 1);
+        const actRes = await fetch(`/api/v1/objects/${slug}/records/${recordId}/activity`);
+        if (actRes.ok) setActivities(await actRes.json().then((r) => r.data));
+      }
     },
-    [slug, recordId]
+    [slug, recordId, object]
   );
 
   const handleDelete = useCallback(async () => {
@@ -179,6 +188,9 @@ export default function RecordDetailPage() {
               {deleting ? "Deleting..." : "Delete"}
             </Button>
           </div>
+          {object.attributes.some((a: any) => a.type === "status") && (
+            <StageBar objectSlug={slug} recordId={recordId} version={stageVersion} />
+          )}
         </div>
 
         {/* Tabs */}

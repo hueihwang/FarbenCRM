@@ -1,10 +1,10 @@
 "use client";
 
-import { StickyNote, CheckSquare, UserPlus, Clock } from "lucide-react";
+import { StickyNote, CheckSquare, UserPlus, Clock, ArrowRightLeft } from "lucide-react";
 
 interface ActivityItem {
   id: string;
-  type: "created" | "note" | "task";
+  type: "created" | "note" | "task" | "stage";
   title: string;
   description?: string;
   createdAt: string;
@@ -63,6 +63,8 @@ function ActivityIcon({ type }: { type: ActivityItem["type"] }) {
       return <StickyNote className="h-3 w-3 text-blue-500" />;
     case "task":
       return <CheckSquare className="h-3 w-3 text-purple-500" />;
+    case "stage":
+      return <ArrowRightLeft className="h-3 w-3 text-amber-500" />;
     default:
       return <Clock className="h-3 w-3 text-muted-foreground" />;
   }

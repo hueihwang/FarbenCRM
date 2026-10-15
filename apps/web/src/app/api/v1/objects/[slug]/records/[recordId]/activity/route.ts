@@ -3,7 +3,7 @@ import { getAuthContext, unauthorized, notFound, success } from "@/lib/api-utils
 import { getObjectBySlug } from "@/services/objects";
 import { getRecord } from "@/services/records";
 import { db } from "@/db";
-import { notes, tasks, taskRecords } from "@/db/schema";
+import { notes, tasks, taskRecords, recordStatusChanges, attributes } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function GET(
@@ -44,7 +44,14 @@ export async function GET(
     : [];
 
   // Build activity feed
-  const activities = [
+  const activities: {
+    id: string;
+    type: "created" | "note" | "task" | "stage";
+    title: string;
+    description?: string;
+    createdAt: string;
+    createdBy: string | null;
+  }[] = [
     // Record creation event
     {
       id: `created-${recordId}`,
@@ -72,6 +79,32 @@ export async function GET(
       createdBy: task.createdBy,
     })),
   ];
+
+  // Stage changes
+  const stageRows = await db
+    .select({
+      id: recordStatusChanges.id,
+      fromTitle: recordStatusChanges.fromTitle,
+      toTitle: recordStatusChanges.toTitle,
+      fromStatusId: recordStatusChanges.fromStatusId,
+      changedAt: recordStatusChanges.changedAt,
+      changedBy: recordStatusChanges.changedBy,
+      attributeTitle: attributes.title,
+    })
+    .from(recordStatusChanges)
+    .innerJoin(attributes, eq(attributes.id, recordStatusChanges.attributeId))
+    .where(eq(recordStatusChanges.recordId, recordId));
+  for (const c of stageRows) {
+    activities.push({
+      id: `stage-${c.id}`,
+      type: "stage" as const,
+      title: c.fromStatusId
+        ? `${c.attributeTitle} changed from ${c.fromTitle ?? "(deleted stage)"} to ${c.toTitle ?? "none"}`
+        : `${c.attributeTitle} set to ${c.toTitle ?? "none"}`,
+      createdAt: c.changedAt.toISOString(),
+      createdBy: c.changedBy,
+    });
+  }
 
   // Sort by date descending
   activities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

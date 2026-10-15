@@ -6,6 +6,7 @@ import type { FilterGroup, SortConfig } from "@farbencrm/shared";
 import { extractPersonalName } from "@/lib/display-name";
 import { buildFilterSQL, buildSortExpressions } from "@/lib/query-builder";
 import { batchGetRecordDisplayNames } from "./display-names";
+import { logStatusChanges, readStatusValues } from "./stage-history";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -410,6 +411,9 @@ export async function createRecord(
   // Insert value rows
   await writeValues(record.id, input, bySlug, createdBy);
 
+  // Starting stage becomes the first stage-history entry
+  await logStatusChanges(record.id, new Map(), input, bySlug, createdBy);
+
   // Return hydrated
   return getRecord(objectId, record.id);
 }
@@ -430,6 +434,9 @@ export async function updateRecord(
     .limit(1);
 
   if (existing.length === 0) return null;
+
+  // Remember current status values so stage changes can be logged
+  const statusBefore = await readStatusValues(recordId, input, bySlug);
 
   // Update timestamp
   await db
@@ -455,6 +462,7 @@ export async function updateRecord(
 
   // Write new values
   await writeValues(recordId, input, bySlug, updatedBy);
+  await logStatusChanges(recordId, statusBefore, input, bySlug, updatedBy);
 
   return getRecord(objectId, recordId);
 }

@@ -9,3 +9,4 @@ export * from "./notifications";
 export * from "./api-keys";
 export * from "./chat";
 export * from "./memories";
+export * from "./stage-history";
