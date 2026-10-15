@@ -182,7 +182,6 @@ farbencrm/
 │   │   ├── lib/               # Auth, utils, query builder
 │   │   └── services/          # Business logic layer
 │   ├── public/                # Static assets, API docs
-│   │   ├── llms.txt           # Product overview for LLMs
 │   │   ├── llms-api.txt       # Concise API reference
 │   │   ├── llms-full.txt      # Full product + API docs
 │   │   └── openapi.json       # OpenAPI specification

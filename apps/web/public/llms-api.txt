@@ -1,5 +1,4 @@
 # FarbenCRM API Reference
-# For product overview: /llms.txt
 # For complete product documentation, features, and data model: /llms-full.txt
 # Base URL: https://your-farbencrm-instance.example.com
 # Auth: Bearer token, Authorization: Bearer fc_sk_<token>

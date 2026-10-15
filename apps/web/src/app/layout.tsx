@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { PlausibleScript } from "@/components/analytics/plausible-script";
-import { GA4Script } from "@/components/analytics/ga4-script";
-import { AmplitudeScript } from "@/components/analytics/amplitude-script";
-import { CookieConsent } from "@/components/analytics/cookie-consent";
-import { baseUrl } from "@/lib/base-url";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,30 +13,8 @@ export const metadata: Metadata = {
     default: "FarbenCRM",
     template: "%s | FarbenCRM",
   },
-  description:
-    "The CRM your AI agent already knows how to use. Open-source, self-hosted, with built-in AI assistant.",
-  metadataBase: new URL(baseUrl),
-  openGraph: {
-    title: "FarbenCRM",
-    description:
-      "The CRM your AI agent already knows how to use. Open-source, self-hosted, with built-in AI assistant.",
-    siteName: "FarbenCRM",
-    type: "website",
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "FarbenCRM",
-    description:
-      "The CRM your AI agent already knows how to use. Open-source, self-hosted, with built-in AI assistant.",
-  },
-  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
-    ? {
-        verification: {
-          google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-        },
-      }
-    : {}),
+  description: "Internal CRM for the Farben Technique team.",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({
@@ -52,11 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <PlausibleScript />
-        <GA4Script />
-        <AmplitudeScript />
         <ThemeProvider>{children}</ThemeProvider>
-        <CookieConsent />
       </body>
     </html>
   );

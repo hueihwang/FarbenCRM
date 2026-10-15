@@ -1,6 +1,5 @@
 # FarbenCRM:Complete Product Documentation
 # Version: 1.0
-# For product overview: /llms.txt
 # For API endpoint reference only, see: /llms-api.txt
 # OpenAPI spec: /openapi.json
 
@@ -134,10 +133,8 @@ This allows unlimited custom attributes without schema migrations.
 - **Lists section**: User-created lists with + button to create new
 - **Bottom**: Docs, Settings
 
-### Landing Page (unauthenticated)
-- Public page at /
-- Links: Docs, Log in, Get Started
-- Feature overview, AI spotlight, CTA
+### Root URL
+- / redirects to /home (or to /login when signed out)
 
 ### Record Detail Page
 - Accessed by clicking any record in table/kanban view

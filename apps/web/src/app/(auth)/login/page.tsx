@@ -4,7 +4,6 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
-import { trackEvent } from "@/lib/analytics";
 
 function LoginForm() {
   const router = useRouter();
@@ -64,7 +63,6 @@ function LoginForm() {
       if (result.error) {
         setError(result.error.message || "Invalid email or password");
       } else {
-        trackEvent("login_completed");
         await handlePostLogin();
       }
     } catch {
