@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
-import { trackEvent } from "@/lib/analytics";
 
 /** Must match ALLOWED_SIGNUP_DOMAIN in lib/auth.ts. */
 const SIGNUP_DOMAIN = "farbentechnique.com";
@@ -52,8 +51,6 @@ export default function RegisterPage() {
       const joinRes = await fetch("/api/v1/auth/post-signup", {
         method: "POST",
       });
-
-      trackEvent("signup_completed");
 
       if (joinRes.status === 200) {
         // Active-workspace cookie was set by the response. They're in.

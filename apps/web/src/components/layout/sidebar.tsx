@@ -21,7 +21,6 @@ import {
   Check,
   Sun,
   Moon,
-  BarChart2,
   Zap,
 } from "lucide-react";
 import {
@@ -40,7 +39,6 @@ const mainNav = [
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/notes", label: "Notes", icon: StickyNote },
   { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/marketing", label: "Marketing", icon: BarChart2 },
 ];
 
 const objectNav = [
@@ -199,7 +197,7 @@ export function Sidebar({
           <NavItem
             key={item.href}
             {...item}
-            active={item.href === "/marketing" ? pathname.startsWith("/marketing") : pathname === item.href}
+            active={pathname === item.href}
             expanded={expanded}
             onClick={onNavigate}
           />

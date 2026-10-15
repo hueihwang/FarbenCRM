@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const publicPaths = ["/login", "/register", "/api/auth", "/blog", "/compare"];
+const publicPaths = ["/login", "/register", "/api/auth"];
 const workspaceSetupPaths = ["/select-workspace", "/api/v1/workspaces"];
 
 export function middleware(req: NextRequest) {
@@ -24,8 +24,8 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow public API spec endpoints and SEO files without auth
-  if (pathname === "/openapi.json" || pathname === "/llms.txt" || pathname === "/llms-api.txt" || pathname === "/llms-full.txt" || pathname === "/robots.txt" || pathname === "/sitemap.xml") {
+  // Allow public API docs and robots.txt without auth
+  if (pathname === "/openapi.json" || pathname === "/llms-api.txt" || pathname === "/llms-full.txt" || pathname === "/robots.txt") {
     return NextResponse.next();
   }
 

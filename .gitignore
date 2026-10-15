@@ -34,8 +34,8 @@ postgres-data/
 # Claude (keep agents + settings.json, exclude local secrets)
 .claude/settings.local.json
 
-# Private strategy and execution docs
-marketing/
+# Private strategy and execution docs (repo root only)
+/marketing/
 .claude/writers/
 .claude/agents/writer-*.md
 

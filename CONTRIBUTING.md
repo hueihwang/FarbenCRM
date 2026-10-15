@@ -252,7 +252,7 @@ lsof -ti:3001 | xargs kill -9
 
 - Open a [discussion](https://github.com/your-org/farbencrm/discussions)
 - Check existing issues and PRs
-- Read the [README](./README.md) and [API documentation](https://your-farbencrm-instance.example.com/llms.txt)
+- Read the [README](./README.md) and [API documentation](https://your-farbencrm-instance.example.com/llms-api.txt)
 
 ## License
 
