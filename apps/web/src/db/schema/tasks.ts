@@ -7,6 +7,10 @@ export const tasks = pgTable("tasks", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   content: text("content").notNull(),
   deadline: timestamp("deadline"),
+  /** Activity type, see lib/activity-types.ts */
+  type: text("type").notNull().default("follow_up"),
+  /** False: due by the end of the deadline's day; true: at that exact time. */
+  hasDueTime: boolean("has_due_time").notNull().default(false),
   isCompleted: boolean("is_completed").notNull().default(false),
   completedAt: timestamp("completed_at"),
   workspaceId: text("workspace_id")

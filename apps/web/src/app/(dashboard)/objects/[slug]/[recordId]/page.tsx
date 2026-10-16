@@ -282,7 +282,7 @@ export default function RecordDetailPage() {
             <TabsList>
               <TabsTrigger value="attributes">Attributes</TabsTrigger>
               <TabsTrigger value="notes">Notes</TabsTrigger>
-              <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="tasks">Activities</TabsTrigger>
               <TabsTrigger value="activity">
                 Activity
                 {activities.length > 0 && (
@@ -314,7 +314,15 @@ export default function RecordDetailPage() {
             </TabsContent>
 
             <TabsContent value="tasks">
-              <RecordTasks objectSlug={slug} recordId={recordId} />
+              <RecordTasks
+                objectSlug={slug}
+                recordId={recordId}
+                recordDisplayName={displayName}
+                onChanged={() => {
+                  setRecord((prev) => (prev ? { ...prev, lastActivityAt: new Date().toISOString() } : prev));
+                  refreshActivity();
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="activity">

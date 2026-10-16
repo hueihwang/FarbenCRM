@@ -4,15 +4,24 @@ import {
   taskRecords,
   taskAssignees,
   users,
+  records,
 } from "@/db/schema";
 import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { batchGetRecordDisplayNames } from "./display-names";
 import { touchRecords, touchTaskRecords } from "./record-activity";
+import { DEFAULT_ACTIVITY_TYPE, normalizeDeadline as normalizeDeadlineFor, type ActivityType } from "@/lib/activity-types";
+
+/** Hours ahead of UTC for the business's own calendar day (Malaysia: 8, no DST). */
+const BUSINESS_TZ_OFFSET_HOURS = Number(process.env.BUSINESS_TZ_OFFSET_HOURS ?? 8);
+const normalizeDeadline = (deadline: string | null | undefined, hasDueTime?: boolean) =>
+  normalizeDeadlineFor(deadline, hasDueTime, BUSINESS_TZ_OFFSET_HOURS);
 
 export interface TaskData {
   id: string;
   content: string;
+  type: ActivityType;
   deadline: Date | null;
+  hasDueTime: boolean;
   isCompleted: boolean;
   completedAt: Date | null;
   createdBy: string | null;
@@ -74,7 +83,9 @@ async function enrichTasks(
   return taskRows.map((t) => ({
     id: t.id,
     content: t.content,
+    type: t.type as ActivityType,
     deadline: t.deadline,
+    hasDueTime: t.hasDueTime,
     isCompleted: t.isCompleted,
     completedAt: t.completedAt,
     createdBy: t.createdBy,
@@ -144,6 +155,8 @@ export async function createTask(
   workspaceId: string,
   options: {
     deadline?: string | null;
+    type?: ActivityType;
+    hasDueTime?: boolean;
     recordIds?: string[];
     assigneeIds?: string[];
   } = {}
@@ -154,7 +167,9 @@ export async function createTask(
       content,
       createdBy,
       workspaceId,
-      deadline: options.deadline ? new Date(options.deadline) : null,
+      type: options.type ?? DEFAULT_ACTIVITY_TYPE,
+      hasDueTime: !!options.hasDueTime && !!options.deadline,
+      deadline: normalizeDeadline(options.deadline, options.hasDueTime),
     })
     .returning();
 
@@ -188,6 +203,8 @@ export async function updateTask(
   updates: {
     content?: string;
     deadline?: string | null;
+    type?: ActivityType;
+    hasDueTime?: boolean;
     isCompleted?: boolean;
     recordIds?: string[];
     assigneeIds?: string[];
@@ -205,8 +222,12 @@ export async function updateTask(
   const setValues: Record<string, unknown> = {};
   if (updates.content !== undefined) setValues.content = updates.content;
   if (updates.deadline !== undefined) {
-    setValues.deadline = updates.deadline ? new Date(updates.deadline) : null;
+    setValues.deadline = normalizeDeadline(updates.deadline, updates.hasDueTime);
+    setValues.hasDueTime = !!updates.hasDueTime && !!updates.deadline;
+  } else if (updates.hasDueTime !== undefined) {
+    setValues.hasDueTime = updates.hasDueTime;
   }
+  if (updates.type !== undefined) setValues.type = updates.type;
   if (updates.isCompleted !== undefined) {
     setValues.isCompleted = updates.isCompleted;
     setValues.completedAt = updates.isCompleted ? new Date() : null;
@@ -278,4 +299,60 @@ export async function getUpcomingTasks(workspaceId: string, _createdBy: string, 
     .limit(limit);
 
   return enrichTasks(taskRows);
+}
+
+export interface NextActivity {
+  id: string;
+  content: string;
+  type: ActivityType;
+  deadline: Date | null;
+  hasDueTime: boolean;
+  openCount: number;
+}
+
+/**
+ * For every record of an object that has open activities: the next one due
+ * (earliest deadline; undated ones last) and how many are open in total.
+ */
+export async function getNextActivities(objectId: string): Promise<Record<string, NextActivity>> {
+  const rows = await db
+    .select({
+      recordId: taskRecords.recordId,
+      id: tasks.id,
+      content: tasks.content,
+      type: tasks.type,
+      deadline: tasks.deadline,
+      hasDueTime: tasks.hasDueTime,
+      createdAt: tasks.createdAt,
+    })
+    .from(tasks)
+    .innerJoin(taskRecords, eq(taskRecords.taskId, tasks.id))
+    .innerJoin(records, eq(records.id, taskRecords.recordId))
+    .where(and(eq(records.objectId, objectId), eq(tasks.isCompleted, false)));
+
+  // Sort key: earliest deadline first (undated last), then oldest first
+  const key = (r: { deadline: Date | null; createdAt: Date }) =>
+    [r.deadline ? r.deadline.getTime() : Number.POSITIVE_INFINITY, r.createdAt.getTime()] as const;
+  const earlier = (a: readonly [number, number], b: readonly [number, number]) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
+
+  const best = new Map<string, (typeof rows)[number]>();
+  const counts = new Map<string, number>();
+  for (const r of rows) {
+    counts.set(r.recordId, (counts.get(r.recordId) ?? 0) + 1);
+    const cur = best.get(r.recordId);
+    if (!cur || earlier(key(r), key(cur))) best.set(r.recordId, r);
+  }
+
+  const out: Record<string, NextActivity> = {};
+  for (const [recordId, r] of best) {
+    out[recordId] = {
+      id: r.id,
+      content: r.content,
+      type: r.type as ActivityType,
+      deadline: r.deadline,
+      hasDueTime: r.hasDueTime,
+      openCount: counts.get(recordId) ?? 1,
+    };
+  }
+  return out;
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useObjectRecords } from "@/hooks/use-object-records";
 import { RecordTable } from "@/components/records/record-table";
-import { RecordKanban } from "@/components/records/record-kanban";
+import { RecordKanban, type NextActivityInfo } from "@/components/records/record-kanban";
 import { RecordCreateModal } from "@/components/records/record-create-modal";
 import { FilterBuilder } from "@/components/filters/filter-builder";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -64,6 +64,7 @@ export default function ObjectPage() {
   const [sortOpen, setSortOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [rottingOnly, setRottingOnly] = useState(false);
+  const [nextActivities, setNextActivities] = useState<Record<string, NextActivityInfo> | undefined>();
   const toast = useToast();
   const outcome = useDealOutcome({
     objectSlug: slug,
@@ -87,6 +88,20 @@ export default function ObjectPage() {
   // Auto-detect if board view is available (has a status attribute)
   const statusAttr = object?.attributes.find((a) => a.type === "status");
   const hasBoardView = !!statusAttr;
+
+  // Next open activity per record, for the Pipedrive-style board cards
+  const hasPipeline = !!object?.attributes.some((a) => a.type === "status");
+  useEffect(() => {
+    if (!hasPipeline || view !== "board") return;
+    let cancelled = false;
+    fetch(`/api/v1/objects/${slug}/next-activities`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => !cancelled && json && setNextActivities(json.data))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, hasPipeline, view, records.length]);
 
   // "Rotting only": open-stage records idle past their stage's limit
   const hasRottingRules = !!statusAttr?.statuses?.some((s) => s.rottingDays);
@@ -340,6 +355,7 @@ export default function ObjectPage() {
             attributes={object.attributes as any}
             records={shownRecords}
             statusAttributeSlug={statusAttr!.slug}
+            nextActivities={nextActivities}
             onMoveRecord={(recordId, newStatusId) =>
               handleRecordUpdate(recordId, statusAttr!.slug, newStatusId)
             }

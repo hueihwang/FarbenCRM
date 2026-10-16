@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthContext, unauthorized, notFound, success } from "@/lib/api-utils";
+import { getAuthContext, unauthorized, notFound, badRequest, success } from "@/lib/api-utils";
+import { ACTIVITY_TYPES, isActivityType } from "@/lib/activity-types";
 import { updateTask, deleteTask } from "@/services/tasks";
 
 /** PATCH /api/v1/tasks/[taskId] */
@@ -14,6 +15,9 @@ export async function PATCH(
 
   try {
     const body = await req.json();
+    if (body.type !== undefined && !isActivityType(body.type)) {
+      return badRequest(`type must be one of: ${ACTIVITY_TYPES.map((t) => t.id).join(", ")}`);
+    }
     const task = await updateTask(taskId, ctx.workspaceId, body);
     if (!task) return notFound("Task not found");
     return success(task);

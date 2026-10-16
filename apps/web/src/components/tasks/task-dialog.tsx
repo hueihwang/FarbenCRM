@@ -22,6 +22,8 @@ import {
   Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ACTIVITY_TYPES, toDeadline, type ActivityType } from "@/lib/activity-types";
+import { ActivityIcon } from "./activity-icon";
 import {
   format,
   isToday,
@@ -32,12 +34,24 @@ import {
   addWeeks,
 } from "date-fns";
 
+const PLACEHOLDERS: Record<ActivityType, string> = {
+  call: "Call about trial results",
+  meeting: "Meeting with purchasing",
+  visit: "Plant visit",
+  email: "Email price list",
+  message: "WhatsApp: confirm sample arrival",
+  sample: "Send 2 x 1 kg samples",
+  follow_up: "Follow up on quote",
+};
+
 // ─── Types ───────────────────────────────────────────────────────────
 
 interface TaskFormData {
   id?: string;
   content: string;
   deadline: Date | null;
+  type?: ActivityType;
+  hasDueTime?: boolean;
   assigneeIds: string[];
   recordIds: string[];
   linkedRecords?: { id: string; displayName: string; objectSlug: string }[];
@@ -69,9 +83,13 @@ interface TaskDialogProps {
   defaultRecordId?: string;
   defaultRecordName?: string;
   defaultRecordSlug?: string;
+  /** Activity type preselected when creating */
+  defaultType?: ActivityType;
   onSave: (data: {
     content: string;
     deadline: string | null;
+    type: ActivityType;
+    hasDueTime: boolean;
     recordIds: string[];
     assigneeIds: string[];
   }) => Promise<void>;
@@ -89,11 +107,14 @@ export function TaskDialog({
   defaultRecordId,
   defaultRecordName,
   defaultRecordSlug,
+  defaultType,
   onSave,
   onDelete,
 }: TaskDialogProps) {
   const [content, setContent] = useState("");
+  const [type, setType] = useState<ActivityType>("follow_up");
   const [deadline, setDeadline] = useState<Date | null>(null);
+  const [time, setTime] = useState("");
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [linkedRecords, setLinkedRecords] = useState<
     { id: string; displayName: string; objectSlug: string }[]
@@ -142,12 +163,16 @@ export function TaskDialog({
     if (open) {
       if (mode === "edit" && initialData) {
         setContent(initialData.content);
+        setType(initialData.type ?? "follow_up");
         setDeadline(initialData.deadline);
+        setTime(initialData.hasDueTime && initialData.deadline ? format(initialData.deadline, "HH:mm") : "");
         setAssigneeIds(initialData.assigneeIds);
         setLinkedRecords(initialData.linkedRecords || []);
       } else {
         setContent("");
+        setType(defaultType ?? "follow_up");
         setDeadline(null);
+        setTime("");
         setAssigneeIds(currentUserId ? [currentUserId] : []);
         setLinkedRecords(
           defaultRecordId && defaultRecordName
@@ -178,6 +203,7 @@ export function TaskDialog({
     defaultRecordId,
     defaultRecordName,
     defaultRecordSlug,
+    defaultType,
   ]);
 
   // Fetch workspace members
@@ -276,13 +302,17 @@ export function TaskDialog({
     try {
       await onSave({
         content: content.trim(),
-        deadline: deadline ? deadline.toISOString().split("T")[0] : null,
+        // Local calendar day: with a time, that moment; without, the end of the day
+        deadline: deadline ? toDeadline(deadline, time || null).toISOString() : null,
+        type,
+        hasDueTime: !!(deadline && time),
         recordIds: linkedRecords.map((r) => r.id),
         assigneeIds,
       });
       if (createMore && mode === "create") {
         setContent("");
         setDeadline(null);
+        setTime("");
         setLinkedRecords(
           defaultRecordId && defaultRecordName
             ? [
@@ -381,22 +411,44 @@ export function TaskDialog({
       >
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Create task" : "Edit task"}
+            {mode === "create" ? "Schedule activity" : "Edit activity"}
           </DialogTitle>
           <DialogDescription className="sr-only">
             {mode === "create"
-              ? "Fill in the details to create a new task"
-              : "Edit the task details"}
+              ? "Choose the type, subject and due date of the activity"
+              : "Edit the activity details"}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Activity type */}
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Activity type">
+            {ACTIVITY_TYPES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="radio"
+                aria-checked={type === t.id}
+                onClick={() => setType(t.id)}
+                className={cn(
+                  "flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+                  type === t.id
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <ActivityIcon type={t.id} className="h-3.5 w-3.5" />
+                {t.label}
+              </button>
+            ))}
+          </div>
+
           {/* Task content */}
           <Input
             ref={contentRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What needs to be done?"
+            placeholder={PLACEHOLDERS[type]}
             className="text-sm"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.ctrlKey && !e.metaKey) {
@@ -475,6 +527,25 @@ export function TaskDialog({
                 </div>
               )}
             </div>
+
+            {/* Time (optional) */}
+            {deadline && (
+              <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                <span className="sr-only">Time</span>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground"
+                  aria-label="Time (optional)"
+                />
+                {time && (
+                  <button type="button" onClick={() => setTime("")} className="hover:text-foreground" aria-label="Clear time">
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </label>
+            )}
 
             {/* Assignee picker */}
             <div className="relative" ref={assigneePickerRef}>

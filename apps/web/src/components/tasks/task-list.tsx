@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskDialog } from "./task-dialog";
+import { ActivityIcon } from "./activity-icon";
+import { activityLabel, type ActivityType } from "@/lib/activity-types";
 import { useToast } from "@/components/ui/toast";
 import {
   isToday,
@@ -33,7 +35,9 @@ import {
 interface Task {
   id: string;
   content: string;
+  type: ActivityType;
   deadline: string | null;
+  hasDueTime: boolean;
   isCompleted: boolean;
   completedAt: string | null;
   createdBy: string | null;
@@ -50,16 +54,21 @@ interface CurrentUser {
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
-function getRelativeDateLabel(deadline: string): {
+function getRelativeDateLabel(deadline: string, hasDueTime = false): {
   label: string;
   color: string;
 } {
   const d = new Date(deadline);
   const now = new Date();
   now.setHours(0, 0, 0, 0);
+  const time = hasDueTime ? ` ${format(d, "HH:mm")}` : "";
 
-  if (isToday(d)) return { label: "Due today", color: "text-orange-400" };
-  if (isTomorrow(d)) return { label: "Due tomorrow", color: "text-orange-400" };
+  if (isToday(d)) {
+    return d.getTime() < Date.now()
+      ? { label: `Overdue${time}`, color: "text-destructive" }
+      : { label: `Due today${time}`, color: "text-orange-400" };
+  }
+  if (isTomorrow(d)) return { label: `Due tomorrow${time}`, color: "text-orange-400" };
   if (isYesterday(d)) return { label: "Due yesterday", color: "text-destructive" };
 
   const days = differenceInDays(d, now);
@@ -94,7 +103,7 @@ function getGroupKey(task: Task): GroupKey {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  if (isPast(d) && !isToday(d)) return "overdue";
+  if (isPast(d)) return "overdue";
   if (isToday(d)) return "today";
   if (isThisWeek(d, { weekStartsOn: 1 })) return "this_week";
 
@@ -232,6 +241,8 @@ export function TaskList() {
   async function handleSave(data: {
     content: string;
     deadline: string | null;
+    type: ActivityType;
+    hasDueTime: boolean;
     recordIds: string[];
     assigneeIds: string[];
   }) {
@@ -289,9 +300,9 @@ export function TaskList() {
       {/* Toolbar */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold">Tasks</h1>
+          <h1 className="text-lg font-semibold">Activities</h1>
           <span className="text-sm text-muted-foreground">
-            {total} {total === 1 ? "task" : "tasks"}
+            {total} {total === 1 ? "activity" : "activities"}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -316,14 +327,14 @@ export function TaskList() {
           </Button>
           <Button size="sm" onClick={openCreateDialog}>
             <Plus className="mr-1 h-4 w-4" />
-            New task
+            New activity
           </Button>
         </div>
       </div>
 
       {/* Column headers */}
       <div className="grid grid-cols-[1fr_100px] sm:grid-cols-[1fr_120px_150px_120px] gap-2 border-b border-border px-4 py-1.5 text-xs font-medium text-muted-foreground">
-        <span>Task</span>
+        <span>Activity</span>
         <span>Due date</span>
         <span className="hidden sm:block">Record</span>
         <span className="hidden sm:block">Assigned to</span>
@@ -360,11 +371,11 @@ export function TaskList() {
         {!loading && tasks.length === 0 && (
           <div className="text-center py-12 space-y-2">
             <p className="text-muted-foreground">
-              No tasks yet! Create your first task to get started.
+              Schedule your first call, visit or sample dispatch.
             </p>
             <Button size="sm" variant="outline" onClick={openCreateDialog}>
               <Plus className="mr-1 h-4 w-4" />
-              New task
+              New activity
             </Button>
           </div>
         )}
@@ -423,6 +434,8 @@ export function TaskList() {
             ? {
                 id: editingTask.id,
                 content: editingTask.content,
+                type: editingTask.type,
+                hasDueTime: editingTask.hasDueTime,
                 deadline: editingTask.deadline
                   ? new Date(editingTask.deadline)
                   : null,
@@ -452,7 +465,7 @@ function TaskRow({
   onClick: () => void;
 }) {
   const dateInfo = task.deadline
-    ? getRelativeDateLabel(task.deadline)
+    ? getRelativeDateLabel(task.deadline, task.hasDueTime)
     : null;
 
   return (
@@ -477,6 +490,9 @@ function TaskRow({
             <Circle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
           )}
         </button>
+        <span title={activityLabel(task.type)} className="shrink-0 text-muted-foreground">
+          <ActivityIcon type={task.type} className="h-3.5 w-3.5" />
+        </span>
         <span
           className={cn(
             "text-sm truncate",

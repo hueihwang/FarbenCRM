@@ -1,3 +1,4 @@
+import { isActivityType } from "@/lib/activity-types";
 import { db } from "@/db";
 import {
   conversations,
@@ -318,7 +319,12 @@ export const toolDefinitions = [
         type: "object",
         properties: {
           content: { type: "string", description: "Task description" },
-          deadline: { type: "string", description: "ISO date string for the deadline" },
+          deadline: { type: "string", description: "Due date as YYYY-MM-DD (due by the end of that day), or a full ISO date-time for a specific time" },
+          type: {
+            type: "string",
+            enum: ["call", "meeting", "visit", "email", "message", "sample", "follow_up"],
+            description: "Activity type: call, meeting, visit, email, message (WhatsApp or WeChat), sample (sample dispatch) or follow_up (default)",
+          },
           record_ids: {
             type: "array",
             items: { type: "string" },
@@ -535,6 +541,8 @@ export const toolHandlers: Record<string, ToolHandler> = {
     async execute(args, ctx) {
       const task = await createTask(args.content as string, ctx.userId, ctx.workspaceId, {
         deadline: args.deadline as string | undefined,
+        type: isActivityType(args.type) ? args.type : undefined,
+        hasDueTime: typeof args.deadline === "string" && args.deadline.includes("T"),
         recordIds: args.record_ids as string[] | undefined,
         assigneeIds: [ctx.userId],
       });

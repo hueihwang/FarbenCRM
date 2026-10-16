@@ -38,7 +38,7 @@ const mainNav = [
   { href: "/insights", label: "Insights", icon: BarChart3 },
   { href: "/booth", label: "Booth note", icon: Zap },
   { href: "/chat", label: "Chat", icon: MessageSquare },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare },
+  { href: "/tasks", label: "Activities", icon: CheckSquare },
   { href: "/notes", label: "Notes", icon: StickyNote },
   { href: "/notifications", label: "Notifications", icon: Bell },
 ];

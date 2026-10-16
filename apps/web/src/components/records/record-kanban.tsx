@@ -17,7 +17,9 @@ import {
 } from "@dnd-kit/core";
 import type { AttributeType } from "@farbencrm/shared";
 import { cn } from "@/lib/utils";
-import { GripVertical } from "lucide-react";
+import { AlertTriangle, GripVertical } from "lucide-react";
+import { ActivityIcon } from "@/components/tasks/activity-icon";
+import { describeDue, DUE_TONE_CLASS } from "@/components/tasks/activity-due";
 import { extractPersonalName } from "@/lib/display-name";
 import { idleDays, isRotting } from "@/lib/rotting";
 
@@ -47,6 +49,13 @@ interface RecordRow {
   lastActivityAt?: string;
 }
 
+export interface NextActivityInfo {
+  type: string;
+  content: string;
+  deadline: string | null;
+  hasDueTime: boolean;
+}
+
 interface InsertInfo {
   columnId: string;
   index: number;
@@ -60,6 +69,8 @@ interface RecordKanbanProps {
   onReorder: (columnRecordIds: string[]) => void;
   onClickRecord: (recordId: string) => void;
   objectSlug: string;
+  /** Next open activity per record id; when given, cards show it Pipedrive style */
+  nextActivities?: Record<string, NextActivityInfo>;
 }
 
 // ─── Kanban Board ────────────────────────────────────────────────────
@@ -72,6 +83,7 @@ export function RecordKanban({
   onReorder,
   onClickRecord,
   objectSlug,
+  nextActivities,
 }: RecordKanbanProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [insertInfo, setInsertInfo] = useState<InsertInfo | null>(null);
@@ -273,6 +285,7 @@ export function RecordKanban({
             onClickRecord={onClickRecord}
             insertInfo={insertInfo}
             activeId={activeId}
+            nextActivities={nextActivities}
           />
         )}
 
@@ -290,6 +303,7 @@ export function RecordKanban({
             onClickRecord={onClickRecord}
             insertInfo={insertInfo}
             activeId={activeId}
+            nextActivities={nextActivities}
           />
         ))}
       </div>
@@ -322,6 +336,7 @@ function KanbanColumn({
   onClickRecord,
   insertInfo,
   activeId,
+  nextActivities,
 }: {
   id: string;
   title: string;
@@ -334,17 +349,21 @@ function KanbanColumn({
   onClickRecord: (recordId: string) => void;
   insertInfo: InsertInfo | null;
   activeId: string | null;
+  nextActivities?: Record<string, NextActivityInfo>;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   const count = records.length;
   const rottingCount = records.filter((r) => isRotting(r.lastActivityAt, stage)).length;
-  let currencySum: number | null = null;
+  // Column total per currency (deals store { amount, currency })
+  const totals = new Map<string, number>();
   if (currencyAttr) {
-    currencySum = records.reduce((sum, rec) => {
-      const val = rec.values[currencyAttr.slug] as { amount?: number } | undefined;
-      return sum + (val?.amount ?? 0);
-    }, 0);
+    for (const rec of records) {
+      const val = rec.values[currencyAttr.slug] as { amount?: number; currency?: string; currencyCode?: string } | undefined;
+      if (typeof val?.amount !== "number") continue;
+      const cur = val.currency || val.currencyCode || "MYR";
+      totals.set(cur, (totals.get(cur) ?? 0) + val.amount);
+    }
   }
 
   const showInsert = insertInfo?.columnId === id && activeId;
@@ -382,13 +401,9 @@ function KanbanColumn({
       </div>
 
       {/* Currency total */}
-      {currencySum !== null && currencySum > 0 && (
+      {totals.size > 0 && (
         <div className="px-3 py-1.5 text-xs text-muted-foreground border-b border-border/30">
-          {new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 0,
-          }).format(currencySum)}
+          {[...totals].map(([cur, amt]) => formatMoney(amt, cur)).join(" + ")}
         </div>
       )}
 
@@ -400,6 +415,7 @@ function KanbanColumn({
             <KanbanCard
               record={record}
               stage={stage}
+              nextActivity={nextActivities ? nextActivities[record.id] ?? null : undefined}
               nameAttr={nameAttr}
               currencyAttr={currencyAttr}
               attributes={attributes}
@@ -437,6 +453,7 @@ function InsertIndicator() {
 function KanbanCard({
   record,
   stage,
+  nextActivity,
   nameAttr,
   currencyAttr,
   attributes,
@@ -444,6 +461,8 @@ function KanbanCard({
 }: {
   record: RecordRow;
   stage?: StatusDef;
+  /** undefined: not shown; null: no open activity (warning) */
+  nextActivity?: NextActivityInfo | null;
   nameAttr?: AttributeDef;
   currencyAttr?: AttributeDef;
   attributes: AttributeDef[];
@@ -463,7 +482,12 @@ function KanbanCard({
   const rotting = isRotting(record.lastActivityAt, stage);
   const idle = idleDays(record.lastActivityAt);
 
-  const extraFields = attributes
+  // Pipedrive-style card for pipeline records: company, value, owner, next activity
+  const company = record.values.company as { displayName?: string } | undefined;
+  const owner = record.values.owner as { displayName?: string } | undefined;
+  const pipelineCard = nextActivity !== undefined || !!company || !!owner;
+
+  const extraFields = pipelineCard ? [] : attributes
     .filter(
       (a) =>
         a.slug !== "name" &&
@@ -499,13 +523,31 @@ function KanbanCard({
             <p className="mt-0.5 text-xs font-medium text-destructive">Idle {idle} days</p>
           )}
 
-          {currencyVal?.amount != null && (
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: currencyVal.currencyCode || "USD",
-              }).format(currencyVal.amount)}
+          {(company?.displayName || currencyVal?.amount != null) && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {[
+                company?.displayName,
+                currencyVal?.amount != null
+                  ? formatMoney(currencyVal.amount, (currencyVal as { currency?: string }).currency || currencyVal.currencyCode || "MYR")
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
+          )}
+
+          {pipelineCard && (
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <NextActivityBadge activity={nextActivity} />
+              {owner?.displayName && (
+                <span
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-medium text-primary"
+                  title={owner.displayName}
+                >
+                  {initials(owner.displayName)}
+                </span>
+              )}
+            </div>
           )}
 
           {extraFields.length > 0 && (
@@ -548,10 +590,7 @@ function KanbanCardOverlay({
       <p className="text-sm font-medium truncate">{displayName}</p>
       {currencyVal?.amount != null && (
         <p className="mt-0.5 text-xs text-muted-foreground">
-          {new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: currencyVal.currencyCode || "USD",
-          }).format(currencyVal.amount)}
+          {formatMoney(currencyVal.amount, (currencyVal as { currency?: string }).currency || currencyVal.currencyCode || "MYR")}
         </p>
       )}
     </div>
@@ -559,6 +598,39 @@ function KanbanCardOverlay({
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
+
+function formatMoney(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-MY", { style: "currency", currency, maximumFractionDigits: 0 }).format(amount);
+  } catch {
+    return `${currency} ${Math.round(amount).toLocaleString()}`;
+  }
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase() || "?";
+}
+
+/** Next activity on a card: green when planned, red when overdue, amber warning when none. */
+function NextActivityBadge({ activity }: { activity?: NextActivityInfo | null }) {
+  if (activity === undefined) return <span />;
+  if (activity === null) {
+    return (
+      <span className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
+        <AlertTriangle className="h-3 w-3" />
+        No activity planned
+      </span>
+    );
+  }
+  const due = describeDue(activity.deadline, activity.hasDueTime);
+  return (
+    <span className={cn("flex min-w-0 items-center gap-1 text-[11px]", DUE_TONE_CLASS[due.tone])} title={activity.content}>
+      <ActivityIcon type={activity.type} className="h-3 w-3 shrink-0" />
+      <span className="truncate">{activity.deadline ? due.label : activity.content}</span>
+    </span>
+  );
+}
 
 function getDisplayName(record: RecordRow, nameAttr?: AttributeDef): string {
   if (!nameAttr) return "Unnamed";

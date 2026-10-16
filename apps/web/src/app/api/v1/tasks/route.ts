@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthContext, unauthorized, badRequest, success } from "@/lib/api-utils";
+import { ACTIVITY_TYPES, isActivityType, type ActivityType } from "@/lib/activity-types";
 import { listTasks, createTask } from "@/services/tasks";
 
 /** GET /api/v1/tasks — All tasks for current user in active workspace */
@@ -41,10 +42,15 @@ export async function POST(req: NextRequest) {
   }
 
   if (!body.content) return badRequest("content is required");
+  if (body.type !== undefined && !isActivityType(body.type)) {
+    return badRequest(`type must be one of: ${ACTIVITY_TYPES.map((t) => t.id).join(", ")}`);
+  }
 
   try {
     const task = await createTask(body.content as string, ctx.userId, ctx.workspaceId, {
       deadline: body.deadline as string | undefined,
+      type: body.type as ActivityType | undefined,
+      hasDueTime: body.hasDueTime === true,
       recordIds: body.recordIds as string[] | undefined,
       assigneeIds: body.assigneeIds as string[] | undefined,
     });
