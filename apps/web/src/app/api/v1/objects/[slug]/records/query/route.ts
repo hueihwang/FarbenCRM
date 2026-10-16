@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getAuthContext, unauthorized, notFound, badRequest, success } from "@/lib/api-utils";
 import { getObjectBySlug } from "@/services/objects";
 import { listRecords, assertRecord } from "@/services/records";
+import { RecordValidationError } from "@/services/outcome-rules";
 import type { FilterGroup, SortConfig } from "@farbencrm/shared";
 
 /** POST /api/v1/objects/[slug]/records/query
@@ -25,14 +26,19 @@ export async function POST(
 
   // Assert mode: upsert by matching attribute
   if (body.mode === "assert" && body.matchAttribute && body.values) {
-    const record = await assertRecord(
-      obj.id,
-      body.matchAttribute,
-      body.matchValue,
-      body.values,
-      ctx.userId
-    );
-    return success(record, 200);
+    try {
+      const record = await assertRecord(
+        obj.id,
+        body.matchAttribute,
+        body.matchValue,
+        body.values,
+        ctx.userId
+      );
+      return success(record, 200);
+    } catch (e) {
+      if (e instanceof RecordValidationError) return badRequest(e.message);
+      throw e;
+    }
   }
 
   // Parse filter and sorts

@@ -96,24 +96,39 @@ export function useObjectRecords(slug: string) {
     fetchRecords();
   }, [fetchRecords]);
 
+  /** Optimistic update; reverts and returns the server's error message if the save is refused. */
   const updateRecord = useCallback(
-    async (recordId: string, attrSlug: string, value: unknown) => {
+    async (recordId: string, attrSlug: string, value: unknown): Promise<string | null> => {
+      let before: RecordRow | undefined;
       setRecords((prev) =>
-        prev.map((r) =>
-          r.id === recordId
-            ? { ...r, values: { ...r.values, [attrSlug]: value }, lastActivityAt: new Date().toISOString() }
-            : r
-        )
+        prev.map((r) => {
+          if (r.id !== recordId) return r;
+          before = r;
+          return { ...r, values: { ...r.values, [attrSlug]: value }, lastActivityAt: new Date().toISOString() };
+        })
       );
 
-      await fetch(`/api/v1/objects/${slug}/records/${recordId}`, {
+      const res = await fetch(`/api/v1/objects/${slug}/records/${recordId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ values: { [attrSlug]: value } }),
       });
+      if (res.ok) return null;
+      const body = await res.json().catch(() => null);
+      if (before) setRecords((prev) => prev.map((r) => (r.id === recordId ? before! : r)));
+      return body?.error?.message ?? "Couldn't save the change";
     },
     [slug]
   );
+
+  /** Merge already-saved values into the local list (after a dialog saved them). */
+  const applyLocalChanges = useCallback((recordId: string, changes: Record<string, unknown>) => {
+    setRecords((prev) =>
+      prev.map((r) =>
+        r.id === recordId ? { ...r, values: { ...r.values, ...changes }, lastActivityAt: new Date().toISOString() } : r
+      )
+    );
+  }, []);
 
   const createRecord = useCallback(
     async (values: Record<string, unknown>) => {
@@ -156,6 +171,7 @@ export function useObjectRecords(slug: string) {
     loading,
     fetchData: fetchRecords,
     updateRecord,
+    applyLocalChanges,
     createRecord,
     setRecords,
     // Filter/sort

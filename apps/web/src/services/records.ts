@@ -7,6 +7,7 @@ import { extractPersonalName } from "@/lib/display-name";
 import { buildFilterSQL, buildSortExpressions } from "@/lib/query-builder";
 import { batchGetRecordDisplayNames } from "./display-names";
 import { logStatusChanges, readStatusValues } from "./stage-history";
+import { enforceOutcomeRules } from "./outcome-rules";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -403,6 +404,7 @@ export async function createRecord(
   createdBy: string | null
 ) {
   const { bySlug } = await loadAttributes(objectId);
+  await enforceOutcomeRules(null, input, bySlug);
 
   // Insert record row
   const [record] = await db
@@ -436,6 +438,8 @@ export async function updateRecord(
     .limit(1);
 
   if (existing.length === 0) return null;
+
+  await enforceOutcomeRules(recordId, input, bySlug);
 
   // Remember current status values so stage changes can be logged
   const statusBefore = await readStatusValues(recordId, input, bySlug);

@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isRotting } from "@/lib/rotting";
+import { useDealOutcome } from "@/components/records/deal-outcome";
+import { useToast } from "@/components/ui/toast";
 
 export default function ObjectPage() {
   const params = useParams<{ slug: string }>();
@@ -41,6 +43,7 @@ export default function ObjectPage() {
     loading,
     fetchData,
     updateRecord,
+    applyLocalChanges,
     createRecord,
     setRecords,
     filter,
@@ -61,6 +64,25 @@ export default function ObjectPage() {
   const [sortOpen, setSortOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [rottingOnly, setRottingOnly] = useState(false);
+  const toast = useToast();
+  const outcome = useDealOutcome({
+    objectSlug: slug,
+    attributes: (object?.attributes ?? []) as any,
+    onChanged: applyLocalChanges,
+  });
+
+  /** Every edit from the table or board: Won and Lost go through their dialogs; refused saves show why. */
+  const handleRecordUpdate = async (recordId: string, attrSlug: string, value: unknown) => {
+    if (outcome.available && attrSlug === outcome.statusSlug) {
+      if (value === outcome.lost?.id) return outcome.requestLost(recordId);
+      if (value === outcome.won?.id) {
+        const rec = records.find((r) => r.id === recordId);
+        return outcome.markWon(recordId, rec?.values.company as { id: string; displayName?: string } | undefined);
+      }
+    }
+    const error = await updateRecord(recordId, attrSlug, value);
+    if (error) toast.error(error);
+  };
 
   // Auto-detect if board view is available (has a status attribute)
   const statusAttr = object?.attributes.find((a) => a.type === "status");
@@ -91,6 +113,7 @@ export default function ObjectPage() {
 
   return (
     <div className="flex h-full flex-col">
+      {outcome.dialogs}
       {/* Toolbar */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-3">
@@ -307,7 +330,7 @@ export default function ObjectPage() {
           <RecordTable
             attributes={object.attributes as any}
             records={shownRecords}
-            onUpdateRecord={updateRecord}
+            onUpdateRecord={handleRecordUpdate}
             onCreateRecord={() => setCreateOpen(true)}
             objectSlug={slug}
             editMode={editMode}
@@ -318,7 +341,7 @@ export default function ObjectPage() {
             records={shownRecords}
             statusAttributeSlug={statusAttr!.slug}
             onMoveRecord={(recordId, newStatusId) =>
-              updateRecord(recordId, statusAttr!.slug, newStatusId)
+              handleRecordUpdate(recordId, statusAttr!.slug, newStatusId)
             }
             onReorder={(orderedIds) => {
               // Optimistic local reorder: sort records in orderedIds

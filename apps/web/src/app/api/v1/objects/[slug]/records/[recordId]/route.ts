@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { RecordValidationError } from "@/services/outcome-rules";
 import { getAuthContext, unauthorized, notFound, badRequest, success } from "@/lib/api-utils";
 import { getObjectBySlug } from "@/services/objects";
 import { getRecord, updateRecord, deleteRecord } from "@/services/records";
@@ -38,7 +39,13 @@ export async function PATCH(
     return badRequest("values object is required");
   }
 
-  const record = await updateRecord(obj.id, recordId, values, ctx.userId);
+  let record;
+  try {
+    record = await updateRecord(obj.id, recordId, values, ctx.userId);
+  } catch (e) {
+    if (e instanceof RecordValidationError) return badRequest(e.message);
+    throw e;
+  }
   if (!record) return notFound("Record not found");
 
   return success(record);

@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { RecordValidationError } from "@/services/outcome-rules";
 import { getAuthContext, unauthorized, notFound, badRequest, success } from "@/lib/api-utils";
 import { getObjectBySlug } from "@/services/objects";
 import { listRecords, createRecord } from "@/services/records";
@@ -44,6 +45,12 @@ export async function POST(
     return badRequest("values object is required");
   }
 
-  const record = await createRecord(obj.id, values, ctx.userId);
+  let record;
+  try {
+    record = await createRecord(obj.id, values, ctx.userId);
+  } catch (e) {
+    if (e instanceof RecordValidationError) return badRequest(e.message);
+    throw e;
+  }
   return success(record, 201);
 }
